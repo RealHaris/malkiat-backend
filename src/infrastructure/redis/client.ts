@@ -1,8 +1,7 @@
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 
-export type RedisClient = ReturnType<typeof createClient>;
+export type RedisClient = Redis;
 
-export function createRedisClient(url: string) {
-  const client = createClient({ url });
-  return client;
+export function createRedisClient(url: string): RedisClient {
+  return new Redis(url);
 }

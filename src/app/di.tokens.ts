@@ -4,9 +4,10 @@ export const DI = {
   OutboxRepository: Symbol('OutboxRepository'),
 
   RedisClient: Symbol('RedisClient'),
-  RedisListingReadModel: Symbol('RedisListingReadModel'),
-  RedisListingProjectionWriter: Symbol('RedisListingProjectionWriter'),
 
   BullmqConnection: Symbol('BullmqConnection'),
-  SyncQueue: Symbol('SyncQueue'),
+  ListingEventsQueue: Symbol('ListingEventsQueue'),
+
+  ListingRepository: Symbol('ListingRepository'),
+  ListingEventsPublisher: Symbol('ListingEventsPublisher'),
 } as const;

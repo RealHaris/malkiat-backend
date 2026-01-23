@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { AppWorkerModule } from './app/app.worker.module';
+import { AppWorkerModule } from '@app/app.worker.module';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   // Worker app does not expose HTTP server.
-  await NestFactory.createApplicationContext(AppWorkerModule);
+  const app = await NestFactory.createApplicationContext(AppWorkerModule, {
+    logger: false,
+  });
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 }
 
-bootstrap();
+void bootstrap();

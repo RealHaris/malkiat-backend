@@ -1,0 +1,43 @@
+import { Inject } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+
+import { DI } from '@app/di.tokens';
+import { Listing } from '../../domain/listing.aggregate';
+import { UpdateListingCommand } from '../commands/update-listing.command';
+import type { ListingRepository } from '../ports/listing.repository';
+import type { ListingEventsPublisher } from '../ports/listing-events.publisher';
+
+@CommandHandler(UpdateListingCommand)
+export class UpdateListingHandler implements ICommandHandler<UpdateListingCommand> {
+  constructor(
+    @Inject(DI.ListingRepository) private readonly repo: ListingRepository,
+    @Inject(DI.ListingEventsPublisher)
+    private readonly publisher: ListingEventsPublisher,
+  ) {}
+
+  async execute(command: UpdateListingCommand): Promise<void> {
+    // Minimal "rehydrate" for now (we'll replace with repo.getById later)
+    const listing = Listing.create({
+      id: command.payload.id,
+      ownerId: command.payload.ownerId,
+      title: command.payload.title ?? '(unchanged)',
+      description: command.payload.description,
+      priceAmount: command.payload.priceAmount ?? '0',
+      currency: command.payload.currency ?? 'PKR',
+      propertyType: command.payload.propertyType,
+      status: command.payload.status ?? 'DRAFT',
+    });
+
+    listing.update({
+      title: command.payload.title,
+      description: command.payload.description,
+      priceAmount: command.payload.priceAmount,
+      currency: command.payload.currency,
+      propertyType: command.payload.propertyType,
+      status: command.payload.status,
+    });
+
+    await this.repo.update(listing);
+    // await this.publisher.publish(listing.pullDomainEvents());
+  }
+}
