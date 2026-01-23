@@ -18,7 +18,5 @@ export const outboxEvents = pgTable(
     status: varchar('status', { length: 20 }).default('PENDING'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   },
-  (t) => [
-    index('idx_outbox_pending').on(t.createdAt),
-  ],
+  (t) => [index('idx_outbox_pending').on(t.createdAt)],
 );
