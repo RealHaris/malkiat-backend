@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppApiModule } from './app/app.api.module';
 
+// Legacy shim: keep AppModule pointing to the API module.
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [AppApiModule],
 })
 export class AppModule {}
