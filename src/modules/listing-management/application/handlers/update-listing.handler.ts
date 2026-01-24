@@ -38,6 +38,6 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
     });
 
     await this.repo.update(listing);
-    // await this.publisher.publish(listing.pullDomainEvents());
+    await this.publisher.publish(listing.pullDomainEvents());
   }
 }

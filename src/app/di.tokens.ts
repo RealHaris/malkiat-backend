@@ -5,6 +5,8 @@ export const DI = {
 
   RedisClient: Symbol('RedisClient'),
 
+  TypesenseClient: Symbol('TypesenseClient'),
+
   BullmqConnection: Symbol('BullmqConnection'),
   ListingEventsQueue: Symbol('ListingEventsQueue'),
 

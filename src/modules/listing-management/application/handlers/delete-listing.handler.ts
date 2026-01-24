@@ -28,6 +28,6 @@ export class DeleteListingHandler implements ICommandHandler<DeleteListingComman
     listing.markDeleted();
 
     await this.repo.deleteById(command.payload.id);
-    // await this.publisher.publish(listing.pullDomainEvents());
+    await this.publisher.publish(listing.pullDomainEvents());
   }
 }

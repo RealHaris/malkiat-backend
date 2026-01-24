@@ -16,6 +16,12 @@ const envSchema = z.object({
   REDIS_URL: z.string().optional(),
   BULLMQ_REDIS_URL: z.string().optional(),
 
+  TYPESENSE_HOST: z.string().optional(),
+  TYPESENSE_PORT: z.coerce.number().int().positive().optional(),
+  TYPESENSE_PROTOCOL: z.enum(['http', 'https']).optional(),
+  TYPESENSE_ADMIN_API_KEY: z.string().optional(),
+  TYPESENSE_COLLECTION_LISTINGS: z.string().default('listings'),
+
   LISTING_EVENTS_QUEUE_NAME: z.string().default('listing-events'),
 
   BETTER_AUTH_SECRET: z.string().optional(),

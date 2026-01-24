@@ -28,7 +28,7 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
     });
 
     await this.repo.create(listing);
-    // await this.publisher.publish(listing.pullDomainEvents());
+    await this.publisher.publish(listing.pullDomainEvents());
 
     return { id: listing.snapshot.id };
   }
