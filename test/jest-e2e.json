@@ -6,11 +6,13 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
+  "transformIgnorePatterns": [],
   "moduleNameMapper": {
     "^@app/(.*)$": "<rootDir>/../src/app/$1",
     "^@shared/(.*)$": "<rootDir>/../src/shared/$1",
     "^@infra/(.*)$": "<rootDir>/../src/infrastructure/$1",
     "^@modules/(.*)$": "<rootDir>/../src/modules/$1",
-    "^@worker/(.*)$": "<rootDir>/../src/worker/$1"
+    "^@worker/(.*)$": "<rootDir>/../src/worker/$1",
+    "^@test/(.*)$": "<rootDir>/$1"
   }
 }
