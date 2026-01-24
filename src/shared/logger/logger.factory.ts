@@ -12,7 +12,7 @@ type LoggerOptions = {
 
 export function createAppLogger(opts: LoggerOptions): winston.Logger {
   const logDir = opts.dir || 'logs';
-  
+
   // Ensure log directory exists
   const logDirPath = path.resolve(process.cwd(), logDir);
   if (!fs.existsSync(logDirPath)) {

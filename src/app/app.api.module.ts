@@ -6,7 +6,6 @@ import { IdentityAccessModule } from '@modules/identity-access/identity-access.m
 import { ListingManagementModule } from '@modules/listing-management/listing-management.module';
 import { ListingDiscoveryModule } from '@modules/listing-discovery/listing-discovery.module';
 
-
 @Module({
   imports: [
     SharedConfigModule,

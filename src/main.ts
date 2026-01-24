@@ -4,11 +4,10 @@ import { APP_ENV } from '@shared/config/config.constants';
 import type { AppEnv } from '@shared/config/env';
 import { ValidationPipe } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   try {
-
     const app = await NestFactory.create(AppApiModule, {
       bodyParser: false,
     });
@@ -23,6 +22,29 @@ async function bootstrap() {
     );
 
     const env = app.get<AppEnv>(APP_ENV);
+
+    const config = new DocumentBuilder()
+      .setTitle('Malkiat Backend API')
+      .setDescription('API documentation for Malkiat Backend')
+      .setVersion('1.0')
+      .addApiKey(
+        {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+          description:
+            'Enter your session token (no "Bearer " prefix required)',
+        },
+        'session-token',
+      )
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    });
     await app.listen(env.PORT);
 
     const serverUrl = `http://localhost:${env.PORT}`;
