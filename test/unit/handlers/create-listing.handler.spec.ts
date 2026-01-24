@@ -43,7 +43,7 @@ describe("CreateListingHandler", () => {
         ownerId: "test-owner-id",
         title: "Test Listing",
         description: "Test Description",
-        priceAmount: "100000",
+        priceAmount: 100000,
         currency: "PKR",
         propertyType: "apartment",
       };
@@ -70,7 +70,7 @@ describe("CreateListingHandler", () => {
         id: "test-listing-id",
         ownerId: "test-owner-id",
         title: "Test Listing",
-        priceAmount: "100000",
+        priceAmount: 100000,
       };
 
       const command = new CreateListingCommand(payload);
@@ -89,7 +89,7 @@ describe("CreateListingHandler", () => {
         id: "test-listing-id",
         ownerId: "test-owner-id",
         title: "Test Listing",
-        priceAmount: "100000",
+        priceAmount: 100000,
       };
 
       const command = new CreateListingCommand(payload);
@@ -105,7 +105,7 @@ describe("CreateListingHandler", () => {
         id: "test-listing-id",
         ownerId: "test-owner-id",
         title: "Test Listing",
-        priceAmount: "100000",
+        priceAmount: 100000,
       };
 
       mockRepo.create.mockRejectedValueOnce(new Error("Database error"));
