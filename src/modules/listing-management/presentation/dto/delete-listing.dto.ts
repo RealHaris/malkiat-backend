@@ -1,12 +1,12 @@
-import { IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class DeleteListingDto {
-  @ApiProperty({ description: 'Listing ID' })
+  @ApiProperty({ description: "Listing ID" })
   @IsString()
   id!: string;
 
-  @ApiProperty({ description: 'Owner user ID' })
+  @ApiProperty({ description: "Owner user ID" })
   @IsString()
   ownerId!: string;
 }

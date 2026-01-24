@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
-import { AppWorkerModule } from '@app/app.worker.module';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { NestFactory } from "@nestjs/core";
+import { AppWorkerModule } from "@app/app.worker.module";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 
 async function bootstrap() {
   // Worker app does not expose HTTP server.

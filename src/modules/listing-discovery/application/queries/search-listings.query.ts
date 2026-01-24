@@ -4,7 +4,7 @@ export class SearchListingsQuery {
       q: string;
       page?: number;
       perPage?: number;
-      sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';
+      sort?: "relevance" | "newest" | "price_asc" | "price_desc";
       propertyType?: string;
       currency?: string;
       minPrice?: number;

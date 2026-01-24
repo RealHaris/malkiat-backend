@@ -1,8 +1,8 @@
-import { Global, Module } from '@nestjs/common';
-import { WinstonModule } from 'nest-winston';
-import { APP_ENV } from '@shared/config/config.constants';
-import type { AppEnv } from '@shared/config/env';
-import { createAppLogger } from './logger.factory';
+import { Global, Module } from "@nestjs/common";
+import { WinstonModule } from "nest-winston";
+import { APP_ENV } from "@shared/config/config.constants";
+import type { AppEnv } from "@shared/config/env";
+import { createAppLogger } from "./logger.factory";
 
 @Global()
 @Module({

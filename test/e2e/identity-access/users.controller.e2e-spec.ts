@@ -1,28 +1,28 @@
-import { Controller, Get, Session } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-const request = require('supertest');
-import type { UserSession } from '@thallesp/nestjs-better-auth';
+import { Controller, Get, Session } from "@nestjs/common";
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
+const request = require("supertest");
+import type { UserSession } from "@thallesp/nestjs-better-auth";
 
-@Controller('users')
+@Controller("users")
 class MockUsersController {
-  @Get('me')
+  @Get("me")
   me(@Session() session?: UserSession) {
     return { user: session?.user };
   }
 
-  @Get('public')
+  @Get("public")
   publicRoute() {
     return { ok: true };
   }
 
-  @Get('optional')
+  @Get("optional")
   optional(@Session() session?: UserSession) {
     return { authenticated: !!session };
   }
 }
 
-describe('UsersController (e2e)', () => {
+describe("UsersController (e2e)", () => {
   let app: INestApplication;
   let mockSession: UserSession;
 
@@ -43,24 +43,24 @@ describe('UsersController (e2e)', () => {
 
     mockSession = {
       user: {
-        id: 'test-user-id',
-        email: 'test@example.com',
-        name: 'Test User',
-        role: 'user',
+        id: "test-user-id",
+        email: "test@example.com",
+        name: "Test User",
+        role: "user",
         image: null,
         emailVerified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       session: {
-        id: 'test-session-id',
-        userId: 'test-user-id',
+        id: "test-session-id",
+        userId: "test-user-id",
         createdAt: new Date(),
         updatedAt: new Date(),
         expiresAt: new Date(Date.now() + 86400000),
-        token: 'test-token',
-        ipAddress: '127.0.0.1',
-        userAgent: 'test-agent',
+        token: "test-token",
+        ipAddress: "127.0.0.1",
+        userAgent: "test-agent",
       },
     };
   });
@@ -69,28 +69,28 @@ describe('UsersController (e2e)', () => {
     await app.close();
   });
 
-  describe('GET /users/public', () => {
-    it('should return ok: true for public endpoint', () => {
+  describe("GET /users/public", () => {
+    it("should return ok: true for public endpoint", () => {
       return request(app.getHttpServer())
-        .get('/users/public')
+        .get("/users/public")
         .expect(200)
         .expect((res) => {
           expect(res.body).toEqual({ ok: true });
         });
     });
 
-    it('should not require authentication', () => {
+    it("should not require authentication", () => {
       return request(app.getHttpServer())
-        .get('/users/public')
-        .set('Authorization', 'invalid-token')
+        .get("/users/public")
+        .set("Authorization", "invalid-token")
         .expect(200);
     });
   });
 
-  describe('GET /users/optional', () => {
-    it('should return authenticated: false when no session', () => {
+  describe("GET /users/optional", () => {
+    it("should return authenticated: false when no session", () => {
       return request(app.getHttpServer())
-        .get('/users/optional')
+        .get("/users/optional")
         .expect(200)
         .expect((res) => {
           expect(res.body).toEqual({ authenticated: false });
@@ -98,37 +98,37 @@ describe('UsersController (e2e)', () => {
     });
   });
 
-  describe('GET /users/me', () => {
-    it('should return user data when authenticated', async () => {
+  describe("GET /users/me", () => {
+    it("should return user data when authenticated", async () => {
       const response = await request(app.getHttpServer())
-        .get('/users/me')
-        .set('x-session', JSON.stringify(mockSession));
+        .get("/users/me")
+        .set("x-session", JSON.stringify(mockSession));
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('user');
+      expect(response.body).toHaveProperty("user");
     });
 
-    it('should handle missing session gracefully', async () => {
-      const response = await request(app.getHttpServer()).get('/users/me');
+    it("should handle missing session gracefully", async () => {
+      const response = await request(app.getHttpServer()).get("/users/me");
 
       expect(response.status).toBe(200);
       expect(response.body.user).toBeUndefined();
     });
   });
 
-  describe('Request Validation', () => {
-    it('should handle malformed JSON', () => {
+  describe("Request Validation", () => {
+    it("should handle malformed JSON", () => {
       return request(app.getHttpServer())
-        .get('/users/public')
-        .set('Content-Type', 'application/json')
-        .send('{ invalid json }')
+        .get("/users/public")
+        .set("Content-Type", "application/json")
+        .send("{ invalid json }")
         .expect(400);
     });
 
-    it('should handle large payloads', () => {
+    it("should handle large payloads", () => {
       return request(app.getHttpServer())
-        .post('/users/me')
-        .send({ data: 'x'.repeat(10000) })
+        .post("/users/me")
+        .send({ data: "x".repeat(10000) })
         .expect(404);
     });
   });

@@ -1,281 +1,279 @@
-import { Listing } from '@modules/listing-management/domain/listing.aggregate';
+import { Listing } from "@modules/listing-management/domain/listing.aggregate";
 
-describe('Listing Aggregate', () => {
-  describe('create', () => {
-    it('should create a new listing with default DRAFT status', () => {
+describe("Listing Aggregate", () => {
+  describe("create", () => {
+    it("should create a new listing with default DRAFT status", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       expect(listing.snapshot).toMatchObject({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        status: 'DRAFT',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        status: "DRAFT",
       });
     });
 
-    it('should create a listing with all fields', () => {
+    it("should create a listing with all fields", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        description: 'Test Description',
-        priceAmount: '100000',
-        currency: 'USD',
-        propertyType: 'apartment',
-        status: 'PUBLISHED',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        description: "Test Description",
+        priceAmount: "100000",
+        currency: "USD",
+        propertyType: "apartment",
+        status: "PUBLISHED",
       });
 
       expect(listing.snapshot).toMatchObject({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        description: 'Test Description',
-        priceAmount: '100000',
-        currency: 'USD',
-        propertyType: 'apartment',
-        status: 'PUBLISHED',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        description: "Test Description",
+        priceAmount: "100000",
+        currency: "USD",
+        propertyType: "apartment",
+        status: "PUBLISHED",
       });
     });
 
-    it('should generate ListingCreated domain event', () => {
+    it("should generate ListingCreated domain event", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       const events = listing.pullDomainEvents();
 
       expect(events).toHaveLength(1);
       expect(events[0]).toMatchObject({
-        type: 'ListingCreated',
-        listingId: 'test-listing-id',
-        ownerId: 'test-owner-id',
+        type: "ListingCreated",
+        listingId: "test-listing-id",
+        ownerId: "test-owner-id",
       });
     });
 
-    it('should use provided status if given', () => {
+    it("should use provided status if given", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-        status: 'PUBLISHED',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
+        status: "PUBLISHED",
       });
 
-      expect(listing.snapshot.status).toBe('PUBLISHED');
+      expect(listing.snapshot.status).toBe("PUBLISHED");
     });
 
-    it('should have undefined currency if not provided', () => {
+    it("should have undefined currency if not provided", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       expect(listing.snapshot.currency).toBeUndefined();
     });
   });
 
-  describe('update', () => {
-    it('should update listing fields', () => {
+  describe("update", () => {
+    it("should update listing fields", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Original Title',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Original Title",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       listing.update({
-        title: 'Updated Title',
-        description: 'Updated Description',
+        title: "Updated Title",
+        description: "Updated Description",
       });
 
       expect(listing.snapshot).toMatchObject({
-        title: 'Updated Title',
-        description: 'Updated Description',
+        title: "Updated Title",
+        description: "Updated Description",
       });
     });
 
-    it('should update listing status', () => {
+    it("should update listing status", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-        status: 'DRAFT',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
+        status: "DRAFT",
       });
 
-      listing.update({ status: 'PUBLISHED' });
+      listing.update({ status: "PUBLISHED" });
 
-      expect(listing.snapshot.status).toBe('PUBLISHED');
+      expect(listing.snapshot.status).toBe("PUBLISHED");
     });
 
-    it('should update currency', () => {
+    it("should update currency", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'USD',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "USD",
       });
 
-      listing.update({ currency: 'USD' });
+      listing.update({ currency: "USD" });
 
-      expect(listing.snapshot.currency).toBe('USD');
+      expect(listing.snapshot.currency).toBe("USD");
     });
 
-    it('should update propertyType', () => {
+    it("should update propertyType", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
-      listing.update({ propertyType: 'house' });
+      listing.update({ propertyType: "house" });
 
-      expect(listing.snapshot.propertyType).toBe('house');
+      expect(listing.snapshot.propertyType).toBe("house");
     });
 
-    it('should update priceAmount', () => {
+    it("should update priceAmount", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
-      listing.update({ priceAmount: '150000' });
+      listing.update({ priceAmount: "150000" });
 
-      expect(listing.snapshot.priceAmount).toBe('150000');
+      expect(listing.snapshot.priceAmount).toBe("150000");
     });
 
-    it('should set updatedAt timestamp', () => {
+    it("should set updatedAt timestamp", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       const beforeUpdate = listing.snapshot.updatedAt;
-      listing.update({ title: 'Updated' });
+      listing.update({ title: "Updated" });
       const afterUpdate = listing.snapshot.updatedAt;
 
       expect(afterUpdate).not.toBeUndefined();
       if (beforeUpdate && afterUpdate) {
-        expect(afterUpdate.getTime()).toBeGreaterThanOrEqual(
-          beforeUpdate.getTime(),
-        );
+        expect(afterUpdate.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
       }
     });
 
-    it('should allow updating id', () => {
+    it("should allow updating id", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
-      listing.update({ id: 'new-id' } as any);
+      listing.update({ id: "new-id" } as any);
 
-      expect(listing.snapshot.id).toBe('new-id');
+      expect(listing.snapshot.id).toBe("new-id");
     });
 
-    it('should allow updating ownerId', () => {
+    it("should allow updating ownerId", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
-      listing.update({ ownerId: 'new-owner-id' } as any);
+      listing.update({ ownerId: "new-owner-id" } as any);
 
-      expect(listing.snapshot.ownerId).toBe('new-owner-id');
+      expect(listing.snapshot.ownerId).toBe("new-owner-id");
     });
 
-    it('should generate ListingUpdated domain event', () => {
+    it("should generate ListingUpdated domain event", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       listing.pullDomainEvents();
 
-      listing.update({ title: 'Updated Title' });
+      listing.update({ title: "Updated Title" });
 
       const events = listing.pullDomainEvents();
 
       expect(events).toHaveLength(1);
       expect(events[0]).toMatchObject({
-        type: 'ListingUpdated',
-        listingId: 'test-listing-id',
-        ownerId: 'test-owner-id',
+        type: "ListingUpdated",
+        listingId: "test-listing-id",
+        ownerId: "test-owner-id",
       });
     });
 
-    it('should update multiple fields at once', () => {
+    it("should update multiple fields at once", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Original Title',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Original Title",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       listing.update({
-        title: 'New Title',
-        description: 'New Description',
-        priceAmount: '200000',
-        currency: 'USD',
-        propertyType: 'villa',
-        status: 'PUBLISHED',
+        title: "New Title",
+        description: "New Description",
+        priceAmount: "200000",
+        currency: "USD",
+        propertyType: "villa",
+        status: "PUBLISHED",
       });
 
       expect(listing.snapshot).toMatchObject({
-        title: 'New Title',
-        description: 'New Description',
-        priceAmount: '200000',
-        currency: 'USD',
-        propertyType: 'villa',
-        status: 'PUBLISHED',
+        title: "New Title",
+        description: "New Description",
+        priceAmount: "200000",
+        currency: "USD",
+        propertyType: "villa",
+        status: "PUBLISHED",
       });
     });
   });
 
-  describe('markDeleted', () => {
-    it('should generate ListingDeleted domain event', () => {
+  describe("markDeleted", () => {
+    it("should generate ListingDeleted domain event", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       listing.pullDomainEvents();
@@ -286,19 +284,19 @@ describe('Listing Aggregate', () => {
 
       expect(events).toHaveLength(1);
       expect(events[0]).toMatchObject({
-        type: 'ListingDeleted',
-        listingId: 'test-listing-id',
-        ownerId: 'test-owner-id',
+        type: "ListingDeleted",
+        listingId: "test-listing-id",
+        ownerId: "test-owner-id",
       });
     });
 
-    it('should not modify listing state', () => {
+    it("should not modify listing state", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       const beforeSnapshot = { ...listing.snapshot };
@@ -308,14 +306,14 @@ describe('Listing Aggregate', () => {
     });
   });
 
-  describe('pullDomainEvents', () => {
-    it('should return all domain events and clear them', () => {
+  describe("pullDomainEvents", () => {
+    it("should return all domain events and clear them", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       const firstEvents = listing.pullDomainEvents();
@@ -325,60 +323,60 @@ describe('Listing Aggregate', () => {
       expect(secondEvents).toHaveLength(0);
     });
 
-    it('should accumulate multiple events', () => {
+    it("should accumulate multiple events", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
-      listing.update({ title: 'Updated' });
+      listing.update({ title: "Updated" });
       listing.markDeleted();
 
       const events = listing.pullDomainEvents();
 
       expect(events).toHaveLength(3);
-      expect(events[0].type).toBe('ListingCreated');
-      expect(events[1].type).toBe('ListingUpdated');
-      expect(events[2].type).toBe('ListingDeleted');
+      expect(events[0].type).toBe("ListingCreated");
+      expect(events[1].type).toBe("ListingUpdated");
+      expect(events[2].type).toBe("ListingDeleted");
     });
   });
 
-  describe('snapshot', () => {
-    it('should return a copy of listing properties', () => {
+  describe("snapshot", () => {
+    it("should return a copy of listing properties", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       const snapshot = listing.snapshot;
 
       expect(snapshot).toMatchObject({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
       });
     });
 
-    it('should return immutable snapshot', () => {
+    it("should return immutable snapshot", () => {
       const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
+        id: "test-listing-id",
+        ownerId: "test-owner-id",
+        title: "Test Listing",
+        priceAmount: "100000",
+        currency: "PKR",
       });
 
       const snapshot = listing.snapshot;
-      snapshot.title = 'Modified';
+      snapshot.title = "Modified";
 
-      expect(listing.snapshot.title).toBe('Test Listing');
+      expect(listing.snapshot.title).toBe("Test Listing");
     });
   });
 });

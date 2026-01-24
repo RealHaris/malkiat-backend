@@ -1,15 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SearchListingsHandler } from '@modules/listing-discovery/application/handlers/search-listings.handler';
-import { SearchListingsQuery } from '@modules/listing-discovery/application/queries/search-listings.query';
-import { DI } from '@app/di.tokens';
-import { APP_ENV } from '@shared/config/config.constants';
-import type { TypesenseClient } from '@infra/typesense/provider';
-import {
-  mockTypesenseClient,
-  mockAppEnv,
-} from '@test/mocks/providers/command-bus.mock';
+import { Test, TestingModule } from "@nestjs/testing";
+import { SearchListingsHandler } from "@modules/listing-discovery/application/handlers/search-listings.handler";
+import { SearchListingsQuery } from "@modules/listing-discovery/application/queries/search-listings.query";
+import { DI } from "@app/di.tokens";
+import { APP_ENV } from "@shared/config/config.constants";
+import { mockTypesenseClient, mockAppEnv } from "@test/mocks/providers/command-bus.mock";
 
-describe('SearchListingsHandler', () => {
+describe("SearchListingsHandler", () => {
   let handler: SearchListingsHandler;
   let mockTypesense: any;
 
@@ -34,10 +30,10 @@ describe('SearchListingsHandler', () => {
     jest.clearAllMocks();
   });
 
-  describe('execute', () => {
-    it('should search listings with empty query', async () => {
+  describe("execute", () => {
+    it("should search listings with empty query", async () => {
       const query = new SearchListingsQuery({
-        q: '',
+        q: "",
       });
 
       await handler.execute(query);
@@ -45,9 +41,9 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should search listings with query term', async () => {
+    it("should search listings with query term", async () => {
       const query = new SearchListingsQuery({
-        q: 'modern apartment',
+        q: "modern apartment",
       });
 
       await handler.execute(query);
@@ -55,9 +51,9 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should use default pagination when not provided', async () => {
+    it("should use default pagination when not provided", async () => {
       const query = new SearchListingsQuery({
-        q: 'search term',
+        q: "search term",
       });
 
       await handler.execute(query);
@@ -65,9 +61,9 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should apply price range filters when provided', async () => {
+    it("should apply price range filters when provided", async () => {
       const query = new SearchListingsQuery({
-        q: 'apartment',
+        q: "apartment",
         minPrice: 1000000,
         maxPrice: 5000000,
       });
@@ -77,9 +73,9 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should apply minPrice filter only', async () => {
+    it("should apply minPrice filter only", async () => {
       const query = new SearchListingsQuery({
-        q: 'house',
+        q: "house",
         minPrice: 2000000,
       });
 
@@ -88,9 +84,9 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should apply maxPrice filter only', async () => {
+    it("should apply maxPrice filter only", async () => {
       const query = new SearchListingsQuery({
-        q: 'villa',
+        q: "villa",
         maxPrice: 10000000,
       });
 
@@ -99,10 +95,10 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should apply propertyType filter', async () => {
+    it("should apply propertyType filter", async () => {
       const query = new SearchListingsQuery({
-        q: 'search term',
-        propertyType: 'apartment',
+        q: "search term",
+        propertyType: "apartment",
       });
 
       await handler.execute(query);
@@ -110,10 +106,10 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should apply currency filter', async () => {
+    it("should apply currency filter", async () => {
       const query = new SearchListingsQuery({
-        q: 'search term',
-        currency: 'USD',
+        q: "search term",
+        currency: "USD",
       });
 
       await handler.execute(query);
@@ -121,17 +117,12 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should apply sorting when provided', async () => {
-      const sortOptions = [
-        'relevance',
-        'newest',
-        'price_asc',
-        'price_desc',
-      ] as const;
+    it("should apply sorting when provided", async () => {
+      const sortOptions = ["relevance", "newest", "price_asc", "price_desc"] as const;
 
       for (const sort of sortOptions) {
         const query = new SearchListingsQuery({
-          q: 'search term',
+          q: "search term",
           sort,
         });
         await handler.execute(query);
@@ -140,14 +131,14 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalledTimes(4);
     });
 
-    it('should combine all filters correctly', async () => {
+    it("should combine all filters correctly", async () => {
       const query = new SearchListingsQuery({
-        q: 'modern apartment',
+        q: "modern apartment",
         page: 2,
         perPage: 25,
-        sort: 'price_asc',
-        propertyType: 'apartment',
-        currency: 'PKR',
+        sort: "price_asc",
+        propertyType: "apartment",
+        currency: "PKR",
         minPrice: 3000000,
         maxPrice: 7000000,
       });
@@ -157,18 +148,14 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should handle search service errors gracefully', async () => {
-      mockTypesense.search.mockRejectedValueOnce(
-        new Error('Search service unavailable'),
-      );
+    it("should handle search service errors gracefully", async () => {
+      mockTypesense.search.mockRejectedValueOnce(new Error("Search service unavailable"));
 
       const query = new SearchListingsQuery({
-        q: 'search term',
+        q: "search term",
       });
 
-      await expect(handler.execute(query)).rejects.toThrow(
-        'Search service unavailable',
-      );
+      await expect(handler.execute(query)).rejects.toThrow("Search service unavailable");
     });
   });
 });
