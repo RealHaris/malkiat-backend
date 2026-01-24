@@ -1,3 +1,4 @@
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
@@ -11,6 +12,12 @@ type LoggerOptions = {
 
 export function createAppLogger(opts: LoggerOptions): winston.Logger {
   const logDir = opts.dir || 'logs';
+  
+  // Ensure log directory exists
+  const logDirPath = path.resolve(process.cwd(), logDir);
+  if (!fs.existsSync(logDirPath)) {
+    fs.mkdirSync(logDirPath, { recursive: true });
+  }
 
   const consoleFormat = winston.format.combine(
     winston.format.colorize({ all: true }),

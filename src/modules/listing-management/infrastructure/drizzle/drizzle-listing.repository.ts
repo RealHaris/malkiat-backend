@@ -1,8 +1,8 @@
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
 
-import type { ListingRepository } from '../../application/ports/listing.repository';
-import type { Listing } from '../../domain/listing.aggregate';
+import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
+import type { Listing } from '@modules/listing-management/domain/listing.aggregate';
 import { listings } from '@infra/db/drizzle/schema';
 
 export class DrizzleListingRepository implements ListingRepository {

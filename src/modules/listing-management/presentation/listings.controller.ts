@@ -4,12 +4,12 @@ import { Roles } from '@thallesp/nestjs-better-auth';
 
 import { ROLES } from '@shared/auth/roles';
 
-import { CreateListingCommand } from '../application/commands/create-listing.command';
-import { DeleteListingCommand } from '../application/commands/delete-listing.command';
-import { UpdateListingCommand } from '../application/commands/update-listing.command';
-import { CreateListingDto } from './dto/create-listing.dto';
-import { DeleteListingDto } from './dto/delete-listing.dto';
-import { UpdateListingDto } from './dto/update-listing.dto';
+import { CreateListingCommand } from '@modules/listing-management/application/commands/create-listing.command';
+import { DeleteListingCommand } from '@modules/listing-management/application/commands/delete-listing.command';
+import { UpdateListingCommand } from '@modules/listing-management/application/commands/update-listing.command';
+import { CreateListingDto } from '@modules/listing-management/presentation/dto/create-listing.dto';
+import { DeleteListingDto } from '@modules/listing-management/presentation/dto/delete-listing.dto';
+import { UpdateListingDto } from '@modules/listing-management/presentation/dto/update-listing.dto';
 
 @Controller('listings')
 @Roles([ROLES.ADMIN, ROLES.AGENT])

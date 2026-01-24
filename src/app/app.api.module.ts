@@ -5,8 +5,7 @@ import { AppLoggerModule } from '@shared/logger/logger.module';
 import { IdentityAccessModule } from '@modules/identity-access/identity-access.module';
 import { ListingManagementModule } from '@modules/listing-management/listing-management.module';
 import { ListingDiscoveryModule } from '@modules/listing-discovery/listing-discovery.module';
-import { AppController } from '../app.controller';
-import { AppService } from '../app.service';
+
 
 @Module({
   imports: [
@@ -17,7 +16,7 @@ import { AppService } from '../app.service';
     ListingManagementModule,
     ListingDiscoveryModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppApiModule {}

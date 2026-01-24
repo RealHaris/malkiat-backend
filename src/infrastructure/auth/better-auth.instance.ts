@@ -3,9 +3,9 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Resend } from 'resend';
 import type { AppEnv } from '@shared/config/env';
-import { createRedisSecondaryStorage } from './redis-secondary-storage';
+import { createRedisSecondaryStorage } from '@infra/auth/redis-secondary-storage';
 import type { RedisClient } from '@infra/redis/client';
-import * as schema from '../db/drizzle/schema';
+import * as schema from '@infra/db/drizzle/schema';
 
 export function createBetterAuthInstance(
   env: AppEnv,

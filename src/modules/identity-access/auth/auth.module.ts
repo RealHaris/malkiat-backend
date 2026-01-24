@@ -6,9 +6,11 @@ import type { AppEnv } from '@shared/config/env';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { RedisClient } from '@infra/redis/client';
 import { createBetterAuthInstance } from '@infra/auth/better-auth.instance';
+import { InfrastructureModule } from '@infra/infrastructure.module';
 
 @Module({
   imports: [
+    InfrastructureModule,
     BetterAuthNestModule.forRootAsync({
       inject: [APP_ENV, DI.DrizzleDb, DI.RedisClient],
       useFactory: (

@@ -14,7 +14,16 @@ import { loadEnv } from './env';
   providers: [
     {
       provide: APP_ENV,
-      useFactory: () => loadEnv(process.env as Record<string, unknown>),
+      useFactory: () => {
+        try {
+          const env = loadEnv(process.env as Record<string, unknown>);
+          return env;
+        } catch (error) {
+          console.error('❌ Failed to load environment configuration:');
+          console.error(error);
+          throw error;
+        }
+      },
     },
   ],
   exports: [APP_ENV],

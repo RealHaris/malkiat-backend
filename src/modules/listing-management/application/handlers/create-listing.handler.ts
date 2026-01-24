@@ -2,10 +2,10 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { DI } from '@app/di.tokens';
-import { Listing } from '../../domain/listing.aggregate';
-import { CreateListingCommand } from '../commands/create-listing.command';
-import type { ListingRepository } from '../ports/listing.repository';
-import type { ListingEventsPublisher } from '../ports/listing-events.publisher';
+import { Listing } from '@modules/listing-management/domain/listing.aggregate';
+import { CreateListingCommand } from '@modules/listing-management/application/commands/create-listing.command';
+import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
+import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
 
 @CommandHandler(CreateListingCommand)
 export class CreateListingHandler implements ICommandHandler<CreateListingCommand> {

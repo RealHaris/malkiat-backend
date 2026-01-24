@@ -11,12 +11,20 @@ export const BullmqConnectionProvider: Provider = {
   provide: DI.BullmqConnection,
   inject: [APP_ENV],
   useFactory: (env: AppEnv): ConnectionOptions => {
-    const redisUrl = env.BULLMQ_REDIS_URL ?? env.REDIS_URL;
-    if (!redisUrl) {
-      throw new Error(
-        'BULLMQ_REDIS_URL or REDIS_URL is required to initialize BullMQ',
-      );
+    try {
+      const redisUrl = env.BULLMQ_REDIS_URL ?? env.REDIS_URL;
+      if (!redisUrl) {
+        throw new Error(
+          'BULLMQ_REDIS_URL or REDIS_URL is required to initialize BullMQ',
+        );
+      }
+      const connection = createBullmqConnection(redisUrl);
+      console.log('✅ Redis Linked to BullMQ successfully');
+      return connection;
+    } catch (error) {
+      console.error('❌ Failed to link Redis to BullMQ:');
+      console.error(error);
+      throw error;
     }
-    return createBullmqConnection(redisUrl);
   },
 };

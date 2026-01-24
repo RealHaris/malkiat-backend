@@ -24,8 +24,8 @@ const envSchema = z.object({
 
   LISTING_EVENTS_QUEUE_NAME: z.string().default('listing-events'),
 
-  BETTER_AUTH_SECRET: z.string().optional(),
-  BETTER_AUTH_BASE_URL: z.string().optional(),
+  BETTER_AUTH_SECRET: z.string().default('dev-secret-change-in-production'),
+  BETTER_AUTH_BASE_URL: z.string().default('http://localhost:3000'),
   APP_PUBLIC_URL: z.string().optional(),
 
   RESEND_API_KEY: z.string().optional(),

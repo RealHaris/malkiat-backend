@@ -1,8 +1,8 @@
 import { Provider } from '@nestjs/common';
-import { APP_ENV } from '../../shared/config/config.constants';
+import { APP_ENV } from '@shared/config/config.constants';
 import { DI } from '@app/di.tokens';
 import type { AppEnv } from '@shared/config/env';
-import { createRedisClient } from './client';
+import { createRedisClient } from '@infra/redis/client';
 
 export const RedisClientProvider: Provider = {
   provide: DI.RedisClient,

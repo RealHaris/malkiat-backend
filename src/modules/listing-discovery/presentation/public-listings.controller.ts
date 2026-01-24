@@ -2,8 +2,8 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
-import { DiscoverListingsQuery } from '../application/queries/discover-listings.query';
-import { SearchListingsQuery } from '../application/queries/search-listings.query';
+import { DiscoverListingsQuery } from '@modules/listing-discovery/application/queries/discover-listings.query';
+import { SearchListingsQuery } from '@modules/listing-discovery/application/queries/search-listings.query';
 
 @Controller('public/listings')
 @AllowAnonymous()

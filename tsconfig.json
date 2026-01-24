@@ -13,13 +13,13 @@
     "target": "esnext",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@shared/*": ["src/shared/*"],
-      "@infra/*": ["src/infrastructure/*"],
-      "@modules/*": ["src/modules/*"],
-      "@worker/*": ["src/worker/*"]
+      "@/*": ["./src/*"],
+      "@app/*": ["./src/app/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@infra/*": ["./src/infrastructure/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@worker/*": ["./src/worker/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

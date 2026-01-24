@@ -6,10 +6,10 @@ import { APP_ENV } from '@shared/config/config.constants';
 import type { AppEnv } from '@shared/config/env';
 import type { TypesenseClient } from '@infra/typesense/provider';
 
-import { DiscoverListingsQuery } from '../queries/discover-listings.query';
-import type { PaginatedResult } from '../types/paginated-result';
-import type { ListingCard } from '../types/listing-card';
-import { TypesenseListingsSearch } from '../../infrastructure/typesense/listings.search';
+import { DiscoverListingsQuery } from '@modules/listing-discovery/application/queries/discover-listings.query';
+import type { PaginatedResult } from '@modules/listing-discovery/application/types/paginated-result';
+import type { ListingCard } from '@modules/listing-discovery/application/types/listing-card';
+import { TypesenseListingsSearch } from '@modules/listing-discovery/infrastructure/typesense/listings.search';
 
 @QueryHandler(DiscoverListingsQuery)
 export class DiscoverListingsHandler implements IQueryHandler<DiscoverListingsQuery> {

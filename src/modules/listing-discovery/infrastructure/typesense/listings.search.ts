@@ -1,7 +1,7 @@
 import type { Client } from 'typesense';
 
-import type { ListingCard } from '../../application/types/listing-card';
-import type { PaginatedResult } from '../../application/types/paginated-result';
+import type { ListingCard } from '@modules/listing-discovery/application/types/listing-card';
+import type { PaginatedResult } from '@modules/listing-discovery/application/types/paginated-result';
 
 type DiscoverParams = {
   collection: string;
