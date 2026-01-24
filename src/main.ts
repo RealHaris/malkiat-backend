@@ -45,16 +45,34 @@ async function bootstrap() {
         persistAuthorization: true,
       },
     });
-    await app.listen(env.PORT);
 
-    const serverUrl = `http://localhost:${env.PORT}`;
+    let port = env.PORT;
+    let listening = false;
+    let maxAttempts = 10;
+    let attempt = 0;
+
+    while (!listening && attempt < maxAttempts) {
+      try {
+        await app.listen(port);
+        listening = true;
+      } catch (error: any) {
+        if (error.code === 'EADDRINUSE' && attempt < maxAttempts - 1) {
+          port++;
+          attempt++;
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    const serverUrl = `http://localhost:${port}`;
     console.log('\n');
     console.log('─────────────────────────────────────────');
     console.log('✅ Malkiat Backend is running successfully!');
     console.log('─────────────────────────────────────────');
     console.log(`📍 Server URL: ${serverUrl}`);
     console.log(`🌐 Environment: ${env.NODE_ENV}`);
-    console.log(`📡 Port: ${env.PORT}`);
+    console.log(`📡 Port: ${port}`);
     console.log('─────────────────────────────────────────\n');
   } catch (error) {
     console.error('\n');

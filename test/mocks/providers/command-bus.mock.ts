@@ -37,13 +37,21 @@ export const mockTypesenseClient = {
 export const mockAppEnv: jest.Mocked<AppEnv> = {
   NODE_ENV: 'test',
   PORT: 3000,
+  LOG_LEVEL: 'error',
+  LOG_DIR: 'logs',
+  LOG_MAX_FILES: '3d',
+  LOG_MAX_SIZE: '20m',
   DATABASE_URL: 'postgresql://test',
   REDIS_URL: 'redis://test',
-  TYPESENSE_URL: 'http://localhost:8108',
-  TYPESENSE_API_KEY: 'test-key',
+  TYPESENSE_HOST: 'localhost',
+  TYPESENSE_PORT: 8108,
+  TYPESENSE_PROTOCOL: 'http',
+  TYPESENSE_ADMIN_API_KEY: 'test-key',
   TYPESENSE_COLLECTION_LISTINGS: 'listings',
-  AUTH_SECRET: 'test-secret',
-  AUTH_URL: 'http://localhost:3000/auth',
+  LISTING_EVENTS_QUEUE_NAME: 'listing-events',
+  BETTER_AUTH_SECRET: 'test-secret',
+  BETTER_AUTH_BASE_URL: 'http://localhost:3000/auth',
+  RESEND_FROM_EMAIL: 'hello@example.com',
 };
 
 export const createMockCommandBus = (): jest.Mocked<CommandBus> =>
