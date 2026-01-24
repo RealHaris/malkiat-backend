@@ -13,8 +13,8 @@ import type { SearchListingsQueryDto } from '@modules/listing-discovery/presenta
 import { discoverListingsQuerySchema } from '@modules/listing-discovery/presentation/dto/discover-listings-query.dto';
 import { searchListingsQuerySchema } from '@modules/listing-discovery/presentation/dto/search-listings-query.dto';
 
-@ApiTags('public-listings')
-@Controller('public/listings')
+@ApiTags("public-listings")
+@Controller("public/listings")
 @AllowAnonymous()
 export class PublicListingsController {
   constructor(private readonly queryBus: QueryBus) {}

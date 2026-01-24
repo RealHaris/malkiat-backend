@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Patch, Post } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
-import { Roles } from '@thallesp/nestjs-better-auth';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
+import { Body, Controller, Delete, Patch, Post } from "@nestjs/common";
+import { CommandBus } from "@nestjs/cqrs";
+import { Roles } from "@thallesp/nestjs-better-auth";
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from "@nestjs/swagger";
 
 import { ROLES } from '@shared/auth/roles';
 import {
@@ -21,8 +21,8 @@ import { createListingSchema } from '@modules/listing-management/presentation/dt
 import { updateListingSchema } from '@modules/listing-management/presentation/dto/update-listing.dto';
 import { deleteListingSchema } from '@modules/listing-management/presentation/dto/delete-listing.dto';
 
-@ApiTags('listings')
-@Controller('listings')
+@ApiTags("listings")
+@Controller("listings")
 @Roles([ROLES.ADMIN, ROLES.AGENT])
 export class ListingsController {
   constructor(private readonly commandBus: CommandBus) {}

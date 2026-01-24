@@ -1,1 +1,1 @@
-export type ListingStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+export type ListingStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";

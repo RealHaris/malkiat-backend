@@ -1,4 +1,4 @@
-import type { Listing } from '@modules/listing-management/domain/listing.aggregate';
+import type { Listing } from "@modules/listing-management/domain/listing.aggregate";
 
 export interface ListingRepository {
   create(listing: Listing): Promise<void>;

@@ -1,7 +1,7 @@
-import type { Queue } from 'bullmq';
+import type { Queue } from "bullmq";
 
-import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
-import type { ListingDomainEvent } from '@modules/listing-management/domain/listing.aggregate';
+import type { ListingEventsPublisher } from "@modules/listing-management/application/ports/listing-events.publisher";
+import type { ListingDomainEvent } from "@modules/listing-management/domain/listing.aggregate";
 
 export class BullmqListingEventsPublisher implements ListingEventsPublisher {
   constructor(private readonly queue: Queue) {}

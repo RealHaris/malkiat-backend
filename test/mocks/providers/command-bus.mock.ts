@@ -1,8 +1,7 @@
-import type { CommandBus, QueryBus } from '@nestjs/cqrs';
-import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
-import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
-import type { TypesenseClient } from '@infra/typesense/provider';
-import type { AppEnv } from '@shared/config/env';
+import type { CommandBus, QueryBus } from "@nestjs/cqrs";
+import type { ListingRepository } from "@modules/listing-management/application/ports/listing.repository";
+import type { ListingEventsPublisher } from "@modules/listing-management/application/ports/listing-events.publisher";
+import type { AppEnv } from "@shared/config/env";
 
 export const mockCommandBus = {
   execute: jest.fn().mockResolvedValue({}),
@@ -40,23 +39,23 @@ export const mockTypesenseClient = {
 } as any;
 
 export const mockAppEnv: jest.Mocked<AppEnv> = {
-  NODE_ENV: 'test',
+  NODE_ENV: "test",
   PORT: 3000,
-  LOG_LEVEL: 'error',
-  LOG_DIR: 'logs',
-  LOG_MAX_FILES: '3d',
-  LOG_MAX_SIZE: '20m',
-  DATABASE_URL: 'postgresql://test',
-  REDIS_URL: 'redis://test',
-  TYPESENSE_HOST: 'localhost',
+  LOG_LEVEL: "error",
+  LOG_DIR: "logs",
+  LOG_MAX_FILES: "3d",
+  LOG_MAX_SIZE: "20m",
+  DATABASE_URL: "postgresql://test",
+  REDIS_URL: "redis://test",
+  TYPESENSE_HOST: "localhost",
   TYPESENSE_PORT: 8108,
-  TYPESENSE_PROTOCOL: 'http',
-  TYPESENSE_ADMIN_API_KEY: 'test-key',
-  TYPESENSE_COLLECTION_LISTINGS: 'listings',
-  LISTING_EVENTS_QUEUE_NAME: 'listing-events',
-  BETTER_AUTH_SECRET: 'test-secret',
-  BETTER_AUTH_BASE_URL: 'http://localhost:3000/auth',
-  RESEND_FROM_EMAIL: 'hello@example.com',
+  TYPESENSE_PROTOCOL: "http",
+  TYPESENSE_ADMIN_API_KEY: "test-key",
+  TYPESENSE_COLLECTION_LISTINGS: "listings",
+  LISTING_EVENTS_QUEUE_NAME: "listing-events",
+  BETTER_AUTH_SECRET: "test-secret",
+  BETTER_AUTH_BASE_URL: "http://localhost:3000/auth",
+  RESEND_FROM_EMAIL: "hello@example.com",
 };
 
 export const createMockCommandBus = (): jest.Mocked<CommandBus> =>

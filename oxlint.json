@@ -1,0 +1,36 @@
+{
+  "$schema": "https://oxlint.com/schema.json",
+  "target": "node",
+  "env": {
+    "node": true,
+    "jest": true
+  },
+  "plugins": ["typescript"],
+  "ignore": [
+    "eslint.config.mjs",
+    "node_modules",
+    "dist",
+    "coverage",
+    "*.spec.ts",
+    "*.e2e-spec.ts"
+  ],
+  "formatter": {
+    "enabled": true,
+    "formatOptions": {
+      "singleQuote": true,
+      "trailingComma": "all"
+    }
+  },
+  "rules": {
+    "typescript/no-floating-promises": "warn",
+    "typescript/no-explicit-any": "off",
+    "typescript/no-unsafe-argument": "warn"
+  },
+  "categories": {
+    "correctness": "warn",
+    "suspicious": "warn",
+    "perf": "warn",
+    "style": "off",
+    "nursery": "off"
+  }
+}

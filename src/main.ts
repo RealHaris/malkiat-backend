@@ -16,23 +16,22 @@ async function bootstrap() {
     const env = app.get<AppEnv>(APP_ENV);
 
     const config = new DocumentBuilder()
-      .setTitle('Malkiat Backend API')
-      .setDescription('API documentation for Malkiat Backend')
-      .setVersion('1.0')
+      .setTitle("Malkiat Backend API")
+      .setDescription("API documentation for Malkiat Backend")
+      .setVersion("1.0")
       .addApiKey(
         {
-          type: 'apiKey',
-          name: 'Authorization',
-          in: 'header',
-          description:
-            'Enter your session token (no "Bearer " prefix required)',
+          type: "apiKey",
+          name: "Authorization",
+          in: "header",
+          description: 'Enter your session token (no "Bearer " prefix required)',
         },
-        'session-token',
+        "session-token",
       )
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document, {
+    SwaggerModule.setup("api/docs", app, document, {
       swaggerOptions: {
         persistAuthorization: true,
       },
@@ -48,7 +47,7 @@ async function bootstrap() {
         await app.listen(port);
         listening = true;
       } catch (error: any) {
-        if (error.code === 'EADDRINUSE' && attempt < maxAttempts - 1) {
+        if (error.code === "EADDRINUSE" && attempt < maxAttempts - 1) {
           port++;
           attempt++;
         } else {
@@ -58,19 +57,19 @@ async function bootstrap() {
     }
 
     const serverUrl = `http://localhost:${port}`;
-    console.log('\n');
-    console.log('─────────────────────────────────────────');
-    console.log('✅ Malkiat Backend is running successfully!');
-    console.log('─────────────────────────────────────────');
+    console.log("\n");
+    console.log("─────────────────────────────────────────");
+    console.log("✅ Malkiat Backend is running successfully!");
+    console.log("─────────────────────────────────────────");
     console.log(`📍 Server URL: ${serverUrl}`);
     console.log(`🌐 Environment: ${env.NODE_ENV}`);
     console.log(`📡 Port: ${port}`);
-    console.log('─────────────────────────────────────────\n');
+    console.log("─────────────────────────────────────────\n");
   } catch (error) {
-    console.error('\n');
-    console.error('❌ Fatal error during bootstrap:');
+    console.error("\n");
+    console.error("❌ Fatal error during bootstrap:");
     console.error(error);
-    console.error('\n');
+    console.error("\n");
     process.exit(1);
   }
 }

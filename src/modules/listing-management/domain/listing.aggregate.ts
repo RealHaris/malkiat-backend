@@ -1,4 +1,4 @@
-import type { ListingStatus } from './listing-status';
+import type { ListingStatus } from "./listing-status";
 
 export type ListingProps = {
   id: string;
@@ -14,36 +14,32 @@ export type ListingProps = {
 };
 
 export type ListingDomainEvent =
-  | { type: 'ListingCreated'; listingId: string; ownerId: string }
-  | { type: 'ListingUpdated'; listingId: string; ownerId: string }
-  | { type: 'ListingDeleted'; listingId: string; ownerId: string };
+  | { type: "ListingCreated"; listingId: string; ownerId: string }
+  | { type: "ListingUpdated"; listingId: string; ownerId: string }
+  | { type: "ListingDeleted"; listingId: string; ownerId: string };
 
 export class Listing {
   private domainEvents: ListingDomainEvent[] = [];
 
   private constructor(private props: ListingProps) {}
 
-  static create(
-    input: Omit<ListingProps, 'status'> & { status?: ListingStatus },
-  ): Listing {
+  static create(input: Omit<ListingProps, "status"> & { status?: ListingStatus }): Listing {
     const listing = new Listing({
       ...input,
-      status: input.status ?? 'DRAFT',
+      status: input.status ?? "DRAFT",
     });
     listing.domainEvents.push({
-      type: 'ListingCreated',
+      type: "ListingCreated",
       listingId: listing.props.id,
       ownerId: listing.props.ownerId,
     });
     return listing;
   }
 
-  update(
-    patch: Partial<Omit<ListingProps, 'id' | 'ownerId' | 'createdAt'>>,
-  ): void {
+  update(patch: Partial<Omit<ListingProps, "id" | "ownerId" | "createdAt">>): void {
     this.props = { ...this.props, ...patch, updatedAt: new Date() };
     this.domainEvents.push({
-      type: 'ListingUpdated',
+      type: "ListingUpdated",
       listingId: this.props.id,
       ownerId: this.props.ownerId,
     });
@@ -51,7 +47,7 @@ export class Listing {
 
   markDeleted(): void {
     this.domainEvents.push({
-      type: 'ListingDeleted',
+      type: "ListingDeleted",
       listingId: this.props.id,
       ownerId: this.props.ownerId,
     });

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get } from "@nestjs/common";
 import {
   AllowAnonymous,
   OptionalAuth,
@@ -13,8 +13,8 @@ import {
   API_HEADERS,
 } from '@shared/constants/api.constants';
 
-@ApiTags('users')
-@Controller('users')
+@ApiTags("users")
+@Controller("users")
 export class UsersController {
   @Get('me')
   @ApiOperation(API_OPERATIONS.GET_CURRENT_USER)
@@ -24,7 +24,7 @@ export class UsersController {
     return { user: session.user };
   }
 
-  @Get('public')
+  @Get("public")
   @AllowAnonymous()
   @ApiOperation(API_OPERATIONS.PUBLIC_ROUTE)
   @ApiResponse(API_RESPONSES.PUBLIC_ROUTE)
@@ -32,7 +32,7 @@ export class UsersController {
     return { ok: true };
   }
 
-  @Get('optional')
+  @Get("optional")
   @OptionalAuth()
   @ApiOperation(API_OPERATIONS.OPTIONAL_AUTH_ROUTE)
   @ApiResponse(API_RESPONSES.OPTIONAL_AUTH_ROUTE)

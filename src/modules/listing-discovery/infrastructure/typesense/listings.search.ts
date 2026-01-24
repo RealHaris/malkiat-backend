@@ -1,13 +1,13 @@
-import type { Client } from 'typesense';
+import type { Client } from "typesense";
 
-import type { ListingCard } from '@modules/listing-discovery/application/types/listing-card';
-import type { PaginatedResult } from '@modules/listing-discovery/application/types/paginated-result';
+import type { ListingCard } from "@modules/listing-discovery/application/types/listing-card";
+import type { PaginatedResult } from "@modules/listing-discovery/application/types/paginated-result";
 
 type DiscoverParams = {
   collection: string;
   page: number;
   perPage: number;
-  sort?: 'newest' | 'price_asc' | 'price_desc';
+  sort?: "newest" | "price_asc" | "price_desc";
   propertyType?: string;
   currency?: string;
 };
@@ -17,7 +17,7 @@ type SearchParams = {
   q: string;
   page: number;
   perPage: number;
-  sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';
+  sort?: "relevance" | "newest" | "price_asc" | "price_desc";
   propertyType?: string;
   currency?: string;
   minPrice?: number;
@@ -27,12 +27,12 @@ type SearchParams = {
 function toListingCard(doc: any): ListingCard {
   return {
     id: String(doc.id),
-    title: String(doc.title ?? ''),
+    title: String(doc.title ?? ""),
     description: doc.description ?? null,
     priceAmount: Number(doc.priceAmount ?? 0),
-    currency: String(doc.currency ?? 'PKR'),
+    currency: String(doc.currency ?? "PKR"),
     propertyType: doc.propertyType ?? null,
-    status: String(doc.status ?? 'DRAFT'),
+    status: String(doc.status ?? "DRAFT"),
     createdAt: Number(doc.createdAt ?? 0),
   };
 }
@@ -43,40 +43,34 @@ function buildFilterBy(input: {
   minPrice?: number;
   maxPrice?: number;
 }): string {
-  const clauses: string[] = ['status:=PUBLISHED'];
-  if (input.propertyType)
-    clauses.push(`propertyType:=${escapeFilterValue(input.propertyType)}`);
-  if (input.currency)
-    clauses.push(`currency:=${escapeFilterValue(input.currency)}`);
+  const clauses: string[] = ["status:=PUBLISHED"];
+  if (input.propertyType) clauses.push(`propertyType:=${escapeFilterValue(input.propertyType)}`);
+  if (input.currency) clauses.push(`currency:=${escapeFilterValue(input.currency)}`);
 
-  if (typeof input.minPrice === 'number')
-    clauses.push(`priceAmount:>=${input.minPrice}`);
-  if (typeof input.maxPrice === 'number')
-    clauses.push(`priceAmount:<=${input.maxPrice}`);
+  if (typeof input.minPrice === "number") clauses.push(`priceAmount:>=${input.minPrice}`);
+  if (typeof input.maxPrice === "number") clauses.push(`priceAmount:<=${input.maxPrice}`);
 
-  return clauses.join(' && ');
+  return clauses.join(" && ");
 }
 
 function escapeFilterValue(v: string): string {
   // Typesense filter_by uses := with unquoted strings for simple tokens.
   // For safety with spaces, wrap in backticks.
-  if (/^[A-Za-z0-9_\-]+$/.test(v)) return v;
-  return '`' + v.replace(/`/g, '\\`') + '`';
+  if (/^[A-Za-z0-9_-]+$/.test(v)) return v;
+  return "`" + v.replace(/`/g, "\\`") + "`";
 }
 
-function sortByForDiscover(sort?: DiscoverParams['sort']): string {
-  if (sort === 'price_asc') return 'priceAmount:asc,createdAt:desc';
-  if (sort === 'price_desc') return 'priceAmount:desc,createdAt:desc';
-  return 'createdAt:desc';
+function sortByForDiscover(sort?: DiscoverParams["sort"]): string {
+  if (sort === "price_asc") return "priceAmount:asc,createdAt:desc";
+  if (sort === "price_desc") return "priceAmount:desc,createdAt:desc";
+  return "createdAt:desc";
 }
 
-function sortByForSearch(sort?: SearchParams['sort']): string | undefined {
-  if (!sort || sort === 'relevance') return undefined;
-  if (sort === 'newest') return '_text_match:desc,createdAt:desc';
-  if (sort === 'price_asc')
-    return '_text_match:desc,priceAmount:asc,createdAt:desc';
-  if (sort === 'price_desc')
-    return '_text_match:desc,priceAmount:desc,createdAt:desc';
+function sortByForSearch(sort?: SearchParams["sort"]): string | undefined {
+  if (!sort || sort === "relevance") return undefined;
+  if (sort === "newest") return "_text_match:desc,createdAt:desc";
+  if (sort === "price_asc") return "_text_match:desc,priceAmount:asc,createdAt:desc";
+  if (sort === "price_desc") return "_text_match:desc,priceAmount:desc,createdAt:desc";
   return undefined;
 }
 
@@ -88,8 +82,8 @@ export class TypesenseListingsSearch {
       .collections(input.collection)
       .documents()
       .search({
-        q: '*',
-        query_by: 'title',
+        q: "*",
+        query_by: "title",
         filter_by: buildFilterBy({
           propertyType: input.propertyType,
           currency: input.currency,
@@ -97,7 +91,7 @@ export class TypesenseListingsSearch {
         sort_by: sortByForDiscover(input.sort),
         page: input.page,
         per_page: input.perPage,
-        exclude_fields: 'embedding',
+        exclude_fields: "embedding",
       } as any);
 
     return {
@@ -114,7 +108,7 @@ export class TypesenseListingsSearch {
       .documents()
       .search({
         q: input.q,
-        query_by: 'title,description,embedding',
+        query_by: "title,description,embedding",
         filter_by: buildFilterBy({
           propertyType: input.propertyType,
           currency: input.currency,
@@ -122,11 +116,11 @@ export class TypesenseListingsSearch {
           maxPrice: input.maxPrice,
         }),
         // Hybrid: Typesense generates query embeddings because the collection schema has `embed` config.
-        vector_query: 'embedding:([], k:200)',
+        vector_query: "embedding:([], k:200)",
         sort_by: sortByForSearch(input.sort),
         page: input.page,
         per_page: input.perPage,
-        exclude_fields: 'embedding',
+        exclude_fields: "embedding",
       } as any);
 
     return {
