@@ -11,10 +11,10 @@ import {
 
 describe('DiscoverListingsHandler', () => {
   let handler: DiscoverListingsHandler;
-  let mockTypesense: jest.Mocked<TypesenseClient>;
+  let mockTypesense: any;
 
   beforeEach(async () => {
-    mockTypesense = mockTypesenseClient as any;
+    mockTypesense = mockTypesenseClient;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

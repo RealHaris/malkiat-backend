@@ -20,6 +20,7 @@
       "@infra/*": ["./src/infrastructure/*"],
       "@modules/*": ["./src/modules/*"],
       "@worker/*": ["./src/worker/*"],
+      "@test/*": ["./test/*"],
       "*": ["./*"]
     },
     "incremental": true,

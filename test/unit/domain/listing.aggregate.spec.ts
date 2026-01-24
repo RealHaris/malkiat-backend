@@ -8,6 +8,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       expect(listing.snapshot).toMatchObject({
@@ -49,6 +50,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       const events = listing.pullDomainEvents();
@@ -67,6 +69,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
         status: 'PUBLISHED',
       });
 
@@ -79,6 +82,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       expect(listing.snapshot.currency).toBeUndefined();
@@ -92,6 +96,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Original Title',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.update({
@@ -111,6 +116,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
         status: 'DRAFT',
       });
 
@@ -125,7 +131,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
-        currency: 'PKR',
+        currency: 'USD',
       });
 
       listing.update({ currency: 'USD' });
@@ -139,6 +145,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.update({ propertyType: 'house' });
@@ -152,6 +159,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.update({ priceAmount: '150000' });
@@ -165,6 +173,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       const beforeUpdate = listing.snapshot.updatedAt;
@@ -185,6 +194,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.update({ id: 'new-id' } as any);
@@ -198,6 +208,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.update({ ownerId: 'new-owner-id' } as any);
@@ -211,6 +222,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.pullDomainEvents();
@@ -263,6 +275,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.pullDomainEvents();
@@ -285,6 +298,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       const beforeSnapshot = { ...listing.snapshot };
@@ -301,6 +315,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       const firstEvents = listing.pullDomainEvents();
@@ -316,6 +331,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       listing.update({ title: 'Updated' });
@@ -337,6 +353,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       const snapshot = listing.snapshot;
@@ -355,6 +372,7 @@ describe('Listing Aggregate', () => {
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
+        currency: 'PKR',
       });
 
       const snapshot = listing.snapshot;

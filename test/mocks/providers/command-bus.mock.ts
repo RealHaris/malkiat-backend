@@ -22,17 +22,22 @@ export const mockListingEventsPublisher: jest.Mocked<ListingEventsPublisher> = {
   publish: jest.fn().mockResolvedValue(undefined),
 };
 
+const mockSearchFn = jest.fn().mockResolvedValue({
+  found: 0,
+  hits: [],
+  page: 1,
+  out_of: 0,
+  request_params: {},
+});
+
 export const mockTypesenseClient = {
-  collections: jest.fn().mockReturnThis(),
-  documents: jest.fn().mockReturnThis(),
-  search: jest.fn().mockResolvedValue({
-    found: 0,
-    hits: [],
-    page: 1,
-    out_of: 0,
-    request_params: {},
+  collections: jest.fn().mockReturnValue({
+    documents: jest.fn().mockReturnValue({
+      search: mockSearchFn,
+    }),
   }),
-};
+  search: mockSearchFn,
+} as any;
 
 export const mockAppEnv: jest.Mocked<AppEnv> = {
   NODE_ENV: 'test',
