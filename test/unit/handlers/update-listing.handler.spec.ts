@@ -42,7 +42,7 @@ describe('UpdateListingHandler', () => {
         id: 'test-listing-id',
         ownerId: 'test-owner-id',
         title: 'Updated Title',
-        priceAmount: '150000',
+        priceAmount: 150000,
       };
 
       const command = new UpdateListingCommand(payload);
@@ -83,7 +83,7 @@ describe('UpdateListingHandler', () => {
         ownerId: 'test-owner-id',
         title: 'New Title',
         description: 'New Description',
-        priceAmount: '200000',
+        priceAmount: 200000,
         currency: 'USD',
         propertyType: 'house',
         status: 'PUBLISHED' as const,

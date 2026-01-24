@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppApiModule } from '@app/app.api.module';
 import { APP_ENV } from '@shared/config/config.constants';
 import type { AppEnv } from '@shared/config/env';
-import { ValidationPipe } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -13,13 +12,6 @@ async function bootstrap() {
     });
 
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
 
     const env = app.get<AppEnv>(APP_ENV);
 
@@ -48,7 +40,7 @@ async function bootstrap() {
 
     let port = env.PORT;
     let listening = false;
-    let maxAttempts = 10;
+    const maxAttempts = 10;
     let attempt = 0;
 
     while (!listening && attempt < maxAttempts) {

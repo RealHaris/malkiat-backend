@@ -16,13 +16,15 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
   ) {}
 
   async execute(command: UpdateListingCommand): Promise<void> {
+    const priceAmountStr = command.payload.priceAmount?.toString() ?? undefined;
+
     // Minimal "rehydrate" for now (we'll replace with repo.getById later)
     const listing = Listing.create({
       id: command.payload.id,
       ownerId: command.payload.ownerId,
       title: command.payload.title ?? '(unchanged)',
       description: command.payload.description,
-      priceAmount: command.payload.priceAmount ?? '0',
+      priceAmount: priceAmountStr ?? '0',
       currency: command.payload.currency ?? 'PKR',
       propertyType: command.payload.propertyType,
       status: command.payload.status ?? 'DRAFT',
@@ -31,7 +33,7 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
     listing.update({
       title: command.payload.title,
       description: command.payload.description,
-      priceAmount: command.payload.priceAmount,
+      priceAmount: priceAmountStr,
       currency: command.payload.currency,
       propertyType: command.payload.propertyType,
       status: command.payload.status,

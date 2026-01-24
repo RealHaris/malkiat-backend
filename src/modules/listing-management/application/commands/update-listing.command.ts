@@ -5,7 +5,7 @@ export class UpdateListingCommand {
       ownerId: string;
       title?: string;
       description?: string | null;
-      priceAmount?: string;
+      priceAmount?: number;
       currency?: string;
       propertyType?: string | null;
       status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';

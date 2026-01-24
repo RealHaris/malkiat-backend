@@ -6,7 +6,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateListingCommand } from '@modules/listing-management/application/commands/create-listing.command';
 import { UpdateListingCommand } from '@modules/listing-management/application/commands/update-listing.command';
 import { DeleteListingCommand } from '@modules/listing-management/application/commands/delete-listing.command';
-import { createMockListing } from '@test/fixtures/factories';
 
 @Controller('listings')
 class MockListingsController {
