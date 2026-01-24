@@ -22,7 +22,7 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
       title: command.payload.title,
       description: command.payload.description,
       priceAmount: command.payload.priceAmount.toString(),
-      currency: command.payload.currency ?? 'PKR',
+      currency: command.payload.currency ?? "PKR",
       propertyType: command.payload.propertyType,
       status: "DRAFT",
     });

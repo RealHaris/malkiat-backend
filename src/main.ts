@@ -1,9 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { AppApiModule } from '@app/app.api.module';
-import { APP_ENV } from '@shared/config/config.constants';
-import type { AppEnv } from '@shared/config/env';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestFactory } from "@nestjs/core";
+import { AppApiModule } from "@app/app.api.module";
+import { APP_ENV } from "@shared/config/config.constants";
+import type { AppEnv } from "@shared/config/env";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
 async function bootstrap() {
   try {

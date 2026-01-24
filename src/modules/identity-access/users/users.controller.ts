@@ -4,19 +4,15 @@ import {
   OptionalAuth,
   Session,
   type UserSession,
-} from '@thallesp/nestjs-better-auth';
-import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
+} from "@thallesp/nestjs-better-auth";
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from "@nestjs/swagger";
 
-import {
-  API_OPERATIONS,
-  API_RESPONSES,
-  API_HEADERS,
-} from '@shared/constants/api.constants';
+import { API_OPERATIONS, API_RESPONSES, API_HEADERS } from "@shared/constants/api.constants";
 
 @ApiTags("users")
 @Controller("users")
 export class UsersController {
-  @Get('me')
+  @Get("me")
   @ApiOperation(API_OPERATIONS.GET_CURRENT_USER)
   @ApiResponse(API_RESPONSES.GET_CURRENT_USER)
   @ApiHeader(API_HEADERS.AUTHORIZATION)

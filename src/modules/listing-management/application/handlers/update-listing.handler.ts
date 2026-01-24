@@ -24,8 +24,8 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
       ownerId: command.payload.ownerId,
       title: command.payload.title ?? "(unchanged)",
       description: command.payload.description,
-      priceAmount: priceAmountStr ?? '0',
-      currency: command.payload.currency ?? 'PKR',
+      priceAmount: priceAmountStr ?? "0",
+      currency: command.payload.currency ?? "PKR",
       propertyType: command.payload.propertyType,
       status: command.payload.status ?? "DRAFT",
     });
