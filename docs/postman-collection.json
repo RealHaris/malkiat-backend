@@ -1,0 +1,447 @@
+{
+  "info": {
+    "name": "Malkiat Backend API",
+    "description": "Postman collection for Malkiat Backend - A real estate listing platform built with NestJS, CQRS, PostgreSQL, and Typesense",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123\",\n  \"name\": \"John Doe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sign-up/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["sign-up", "email"]
+            },
+            "description": "Create a new user account with email and password. Email verification is required."
+          }
+        },
+        {
+          "name": "Sign In",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sign-in/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["sign-in", "email"]
+            },
+            "description": "Sign in with email and password. Returns session cookies."
+          }
+        },
+        {
+          "name": "Sign Out",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sign-out",
+              "host": ["{{baseUrl}}"],
+              "path": ["sign-out"]
+            },
+            "description": "Sign out the current user and clear session."
+          }
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/get-session",
+              "host": ["{{baseUrl}}"],
+              "path": ["get-session"]
+            },
+            "description": "Get current session information. Requires authentication."
+          }
+        },
+        {
+          "name": "Send Verification Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/send-verification-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["send-verification-email"]
+            },
+            "description": "Request email verification email to be sent."
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/verify-email?token=YOUR_VERIFICATION_TOKEN",
+              "host": ["{{baseUrl}}"],
+              "path": ["verify-email"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "YOUR_VERIFICATION_TOKEN",
+                  "description": "Verification token received in email"
+                }
+              ]
+            },
+            "description": "Verify user email address using token from email."
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["forgot-password"]
+            },
+            "description": "Request password reset email."
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewSecurePassword456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reset-password?token=YOUR_RESET_TOKEN",
+              "host": ["{{baseUrl}}"],
+              "path": ["reset-password"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "YOUR_RESET_TOKEN",
+                  "description": "Reset token received in email"
+                }
+              ]
+            },
+            "description": "Reset password using token from email."
+          }
+        },
+        {
+          "name": "Sign In with Google",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sign-in/social?provider=google",
+              "host": ["{{baseUrl}}"],
+              "path": ["sign-in", "social"],
+              "query": [
+                {
+                  "key": "provider",
+                  "value": "google"
+                }
+              ]
+            },
+            "description": "Initiate Google OAuth sign-in flow."
+          }
+        },
+        {
+          "name": "Sign In with Apple",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sign-in/social?provider=apple",
+              "host": ["{{baseUrl}}"],
+              "path": ["sign-in", "social"],
+              "query": [
+                {
+                  "key": "provider",
+                  "value": "apple"
+                }
+              ]
+            },
+            "description": "Initiate Apple OAuth sign-in flow."
+          }
+        }
+      ],
+      "description": "Authentication endpoints powered by Better Auth with email/password, OAuth, and email verification."
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Get the currently authenticated user's profile. Requires authentication."
+          }
+        },
+        {
+          "name": "Public Route (No Auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/public",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "public"]
+            },
+            "description": "Public endpoint that doesn't require authentication. Returns success response."
+          }
+        },
+        {
+          "name": "Optional Auth Route",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/optional",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "optional"]
+            },
+            "description": "Endpoint that works with or without authentication. Returns authentication status."
+          }
+        }
+      ],
+      "description": "User profile and test endpoints."
+    },
+    {
+      "name": "Listings (Management)",
+      "item": [
+        {
+          "name": "Create Listing",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"ownerId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"title\": \"Luxury Apartment in Downtown\",\n  \"description\": \"Beautiful 3-bedroom apartment with city views, modern amenities, and close to public transportation.\",\n  \"priceAmount\": \"500000\",\n  \"currency\": \"PKR\",\n  \"propertyType\": \"apartment\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/listings",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings"]
+            },
+            "description": "Create a new listing. Requires ADMIN or AGENT role. Publishes ListingCreated event to queue for Typesense indexing."
+          }
+        },
+        {
+          "name": "Update Listing",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"ownerId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"title\": \"Updated: Luxury Apartment in Downtown\",\n  \"priceAmount\": \"550000\",\n  \"status\": \"PUBLISHED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/listings",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings"]
+            },
+            "description": "Update an existing listing. Requires ADMIN or AGENT role. All fields are optional. Publishes ListingUpdated event for Typesense re-indexing."
+          }
+        },
+        {
+          "name": "Delete Listing",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"ownerId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/listings",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings"]
+            },
+            "description": "Delete a listing. Requires ADMIN or AGENT role. Publishes ListingDeleted event to remove from Typesense index."
+          }
+        }
+      ],
+      "description": "Listing management endpoints for CRUD operations. Protected - requires ADMIN or AGENT role."
+    },
+    {
+      "name": "Public Listings (Discovery)",
+      "item": [
+        {
+          "name": "Discover Listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/listings/discovery?page=1&perPage=20&sort=newest&propertyType=apartment&currency=PKR",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "listings", "discovery"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "description": "Items per page (default: 20)"
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "Sort order: newest, price_asc, price_desc (default: newest)"
+                },
+                {
+                  "key": "propertyType",
+                  "value": "apartment",
+                  "description": "Filter by property type",
+                  "disabled": true
+                },
+                {
+                  "key": "currency",
+                  "value": "PKR",
+                  "description": "Filter by currency",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Browse listings with optional filters. Only returns PUBLISHED listings. Uses Typesense for fast discovery."
+          }
+        },
+        {
+          "name": "Search Listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/listings/search?q=luxury%20apartment&page=1&perPage=20&sort=relevance&minPrice=100000&maxPrice=1000000&propertyType=apartment&currency=PKR",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "listings", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "luxury apartment",
+                  "description": "Search query - searches title and description with vector embeddings"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "perPage",
+                  "value": "20",
+                  "description": "Items per page (default: 20)"
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "Sort order: relevance, newest, price_asc, price_desc (default: relevance)"
+                },
+                {
+                  "key": "minPrice",
+                  "value": "100000",
+                  "description": "Minimum price filter",
+                  "disabled": true
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "1000000",
+                  "description": "Maximum price filter",
+                  "disabled": true
+                },
+                {
+                  "key": "propertyType",
+                  "value": "apartment",
+                  "description": "Filter by property type",
+                  "disabled": true
+                },
+                {
+                  "key": "currency",
+                  "value": "PKR",
+                  "description": "Filter by currency",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Full-text search with vector embeddings for semantic search. Only returns PUBLISHED listings. Supports price range and property type filters."
+          }
+        }
+      ],
+      "description": "Public listing discovery and search endpoints. No authentication required. Uses Typesense with vector embeddings for intelligent search."
+    }
+  ]
+}
