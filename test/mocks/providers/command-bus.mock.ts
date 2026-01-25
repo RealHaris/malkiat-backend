@@ -54,7 +54,7 @@ export const mockAppEnv: jest.Mocked<AppEnv> = {
   TYPESENSE_COLLECTION_LISTINGS: "listings",
   LISTING_EVENTS_QUEUE_NAME: "listing-events",
   BETTER_AUTH_SECRET: "test-secret",
-  BETTER_AUTH_BASE_URL: "http://localhost:3000/auth",
+  BETTER_AUTH_BASE_URL: "http://localhost:3002/auth",
   RESEND_FROM_EMAIL: "hello@example.com",
 };
 
