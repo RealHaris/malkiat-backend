@@ -21,15 +21,30 @@ export function createBetterAuthInstance(
 
   const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
+  const trustedOrigins = [
+    env.BETTER_AUTH_BASE_URL,
+    env.APP_PUBLIC_URL,
+  ].filter((origin): origin is string => !!origin && origin !== "undefined");
+
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_BASE_URL,
+    trustedOrigins,
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: false,
       schema,
     }),
     secondaryStorage: redis ? createRedisSecondaryStorage(redis) : undefined,
+    session: {
+      expiresIn: 60 * 60 * 6,
+      updateAge: 60 * 30,
+      cookieCache: {
+        enabled: true,
+        maxAge: 60 * 5,
+        strategy: "compact",
+      },
+    },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
@@ -60,13 +75,6 @@ export function createBetterAuthInstance(
           ? {
               clientId: env.GOOGLE_CLIENT_ID,
               clientSecret: env.GOOGLE_CLIENT_SECRET,
-            }
-          : undefined,
-      apple:
-        env.APPLE_CLIENT_ID && env.APPLE_CLIENT_SECRET
-          ? {
-              clientId: env.APPLE_CLIENT_ID,
-              clientSecret: env.APPLE_CLIENT_SECRET,
             }
           : undefined,
     },

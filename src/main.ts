@@ -15,6 +15,18 @@ async function bootstrap() {
 
     const env = app.get<AppEnv>(APP_ENV);
 
+    const allowedOrigins = [
+      env.APP_PUBLIC_URL,
+      env.BETTER_AUTH_BASE_URL,
+    ].filter((origin): origin is string => !!origin && origin !== "undefined");
+
+    app.enableCors({
+      origin: allowedOrigins,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    });
+
     const config = new DocumentBuilder()
       .setTitle("Malkiat Backend API")
       .setDescription("API documentation for Malkiat Backend")
