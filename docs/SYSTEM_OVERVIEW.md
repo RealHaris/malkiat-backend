@@ -578,7 +578,7 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres
 # Authentication
 BETTER_AUTH_SECRET=your-secret-key
 BETTER_AUTH_BASE_URL=http://localhost:3000
-APP_PUBLIC_URL=http://localhost:3000
+APP_PUBLIC_URL=http://localhost:3001
 
 # Email (Resend)
 RESEND_API_KEY=re-api-key

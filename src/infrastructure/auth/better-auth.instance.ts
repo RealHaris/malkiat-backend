@@ -21,8 +21,21 @@ export function createBetterAuthInstance(
   }
 
   const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
+  const appPublicUrl = env.APP_PUBLIC_URL || 'http://localhost:3001';
 
-  const trustedOrigins = [env.BETTER_AUTH_BASE_URL, env.APP_PUBLIC_URL].filter(
+  const toFrontendUrl = (url: string) => {
+    try {
+      const target = new URL(url);
+      const frontendOrigin = new URL(appPublicUrl).origin;
+      target.protocol = new URL(frontendOrigin).protocol;
+      target.host = new URL(frontendOrigin).host;
+      return target.toString();
+    } catch {
+      return url;
+    }
+  };
+
+  const trustedOrigins = [env.BETTER_AUTH_BASE_URL, appPublicUrl].filter(
     (origin): origin is string => !!origin && origin !== 'undefined',
   );
 
@@ -59,22 +72,24 @@ export function createBetterAuthInstance(
       requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
         if (!resend) return;
+        const frontendUrl = toFrontendUrl(url);
         await resend.emails.send({
           from: env.RESEND_FROM_EMAIL,
           to: user.email,
           subject: 'Reset your password',
-          html: `<!doctype html><html><body><p>Reset your password:</p><p><a href="${url}">${url}</a></p></body></html>`,
+          html: `<!doctype html><html><body><p>Reset your password:</p><p><a href="${frontendUrl}">${frontendUrl}</a></p></body></html>`,
         });
       },
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
         if (!resend) return;
+        const frontendUrl = toFrontendUrl(url);
         await resend.emails.send({
           from: env.RESEND_FROM_EMAIL,
           to: user.email,
           subject: 'Verify your email',
-          html: `<!doctype html><html><body><p>Verify your email:</p><p><a href="${url}">${url}</a></p></body></html>`,
+          html: `<!doctype html><html><body><p>Verify your email:</p><p><a href="${frontendUrl}">${frontendUrl}</a></p></body></html>`,
         });
       },
     },
