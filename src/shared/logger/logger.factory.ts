@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as winston from 'winston';
+import type { LoggerOptions as WinstonLoggerOptions } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
 type LoggerOptions = {
@@ -10,7 +11,7 @@ type LoggerOptions = {
   maxSize: string;
 };
 
-export function createAppLogger(opts: LoggerOptions): winston.Logger {
+export function createAppLoggerOptions(opts: LoggerOptions): WinstonLoggerOptions {
   const logDir = opts.dir || 'logs';
 
   // Ensure log directory exists
@@ -38,7 +39,7 @@ export function createAppLogger(opts: LoggerOptions): winston.Logger {
     winston.format.json(),
   );
 
-  return winston.createLogger({
+  return {
     level: opts.level,
     defaultMeta: {
       service: 'malkiat-backend',
@@ -56,7 +57,7 @@ export function createAppLogger(opts: LoggerOptions): winston.Logger {
         format: fileFormat,
       }),
     ],
-  });
+  };
 }
 
 function safeJson(value: unknown): string {
