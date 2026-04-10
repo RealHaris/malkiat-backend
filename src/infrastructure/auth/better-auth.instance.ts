@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { phoneNumber, emailOTP } from 'better-auth/plugins';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Resend } from 'resend';
 import type { AppEnv } from '@shared/config/env';
@@ -44,6 +45,15 @@ export function createBetterAuthInstance(
         strategy: 'compact',
       },
     },
+    user: {
+      additionalFields: {
+        phoneNumber: {
+          type: 'string',
+          required: false,
+          fieldName: 'phoneNumber',
+        },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
@@ -77,5 +87,35 @@ export function createBetterAuthInstance(
             }
           : undefined,
     },
+    plugins: [
+      phoneNumber({
+        sendOTP: ({ phoneNumber: phone, code }) => {
+          // SMS sending is deferred — log OTP for development only
+          console.log(`[DEV] Phone OTP for ${phone}: ${code}`);
+        },
+        signUpOnVerification: {
+          getTempEmail: (phone) => `${phone.replace(/\+/g, '')}@phone.malkiat.site`,
+          getTempName: (phone) => phone,
+        },
+      }),
+      emailOTP({
+        async sendVerificationOTP({ email, otp, type }) {
+          if (!resend) return;
+          const subjects: Record<string, string> = {
+            'sign-in': 'Your sign-in code — Malkiat',
+            'email-verification': 'Verify your email — Malkiat',
+            'forget-password': 'Reset your password — Malkiat',
+          };
+          resend.emails.send({
+            from: env.RESEND_FROM_EMAIL,
+            to: email,
+            subject: subjects[type] ?? 'Your verification code — Malkiat',
+            html: `<!doctype html><html><body style="font-family:sans-serif;padding:32px"><h2>Your verification code</h2><p style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#111">${otp}</p><p style="color:#666">This code expires in 5 minutes. Do not share it with anyone.</p></body></html>`,
+          });
+        },
+        otpLength: 6,
+        expiresIn: 300,
+      }),
+    ],
   });
 }

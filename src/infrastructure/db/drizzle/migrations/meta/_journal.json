@@ -8,6 +8,13 @@
       "when": 1769205027110,
       "tag": "0000_tense_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775851601488,
+      "tag": "0001_add_phone_number_to_user",
+      "breakpoints": true
     }
   ]
 }
