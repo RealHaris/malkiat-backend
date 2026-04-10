@@ -60,3 +60,4 @@ docker-compose.typesense.yml
 docker-compose.yml
 package-lock.json
 opencode.json
+typesense-data/
