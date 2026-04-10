@@ -1,11 +1,11 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { Resend } from "resend";
-import type { AppEnv } from "@shared/config/env";
-import { createRedisSecondaryStorage } from "@infra/auth/redis-secondary-storage";
-import type { RedisClient } from "@infra/redis/client";
-import * as schema from "@infra/db/drizzle/schema";
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { Resend } from 'resend';
+import type { AppEnv } from '@shared/config/env';
+import { createRedisSecondaryStorage } from '@infra/auth/redis-secondary-storage';
+import type { RedisClient } from '@infra/redis/client';
+import * as schema from '@infra/db/drizzle/schema';
 
 export function createBetterAuthInstance(
   env: AppEnv,
@@ -13,25 +13,24 @@ export function createBetterAuthInstance(
   redis?: RedisClient,
 ) {
   if (!env.BETTER_AUTH_SECRET) {
-    throw new Error("BETTER_AUTH_SECRET is required");
+    throw new Error('BETTER_AUTH_SECRET is required');
   }
   if (!env.BETTER_AUTH_BASE_URL) {
-    throw new Error("BETTER_AUTH_BASE_URL is required");
+    throw new Error('BETTER_AUTH_BASE_URL is required');
   }
 
   const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
-  const trustedOrigins = [
-    env.BETTER_AUTH_BASE_URL,
-    env.APP_PUBLIC_URL,
-  ].filter((origin): origin is string => !!origin && origin !== "undefined");
+  const trustedOrigins = [env.BETTER_AUTH_BASE_URL, env.APP_PUBLIC_URL].filter(
+    (origin): origin is string => !!origin && origin !== 'undefined',
+  );
 
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_BASE_URL,
     trustedOrigins,
     database: drizzleAdapter(db, {
-      provider: "pg",
+      provider: 'pg',
       usePlural: false,
       schema,
     }),
@@ -42,7 +41,7 @@ export function createBetterAuthInstance(
       cookieCache: {
         enabled: true,
         maxAge: 60 * 5,
-        strategy: "compact",
+        strategy: 'compact',
       },
     },
     emailAndPassword: {
@@ -53,7 +52,7 @@ export function createBetterAuthInstance(
         await resend.emails.send({
           from: env.RESEND_FROM_EMAIL,
           to: user.email,
-          subject: "Reset your password",
+          subject: 'Reset your password',
           html: `<!doctype html><html><body><p>Reset your password:</p><p><a href="${url}">${url}</a></p></body></html>`,
         });
       },
@@ -64,7 +63,7 @@ export function createBetterAuthInstance(
         await resend.emails.send({
           from: env.RESEND_FROM_EMAIL,
           to: user.email,
-          subject: "Verify your email",
+          subject: 'Verify your email',
           html: `<!doctype html><html><body><p>Verify your email:</p><p><a href="${url}">${url}</a></p></body></html>`,
         });
       },

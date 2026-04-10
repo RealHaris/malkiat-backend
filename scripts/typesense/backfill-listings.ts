@@ -1,9 +1,7 @@
-/* eslint-disable no-console */
+require('dotenv').config();
 
-require("dotenv").config();
-
-const postgres = require("postgres");
-const { Client } = require("typesense");
+const postgres = require('postgres');
+const { Client } = require('typesense');
 
 function required(name) {
   const v = process.env[name];
@@ -16,13 +14,13 @@ function toUnixSeconds(d) {
 }
 
 async function main() {
-  const databaseUrl = required("DATABASE_URL");
+  const databaseUrl = required('DATABASE_URL');
 
-  const host = required("TYPESENSE_HOST");
-  const port = Number(required("TYPESENSE_PORT"));
-  const protocol = required("TYPESENSE_PROTOCOL");
-  const apiKey = required("TYPESENSE_ADMIN_API_KEY");
-  const indexName = process.env.TYPESENSE_COLLECTION_LISTINGS || "listings";
+  const host = required('TYPESENSE_HOST');
+  const port = Number(required('TYPESENSE_PORT'));
+  const protocol = required('TYPESENSE_PROTOCOL');
+  const apiKey = required('TYPESENSE_ADMIN_API_KEY');
+  const indexName = process.env.TYPESENSE_COLLECTION_LISTINGS || 'listings';
 
   const typesense = new Client({
     nodes: [{ host, port, protocol }],
@@ -63,24 +61,24 @@ async function main() {
       .map((r) =>
         JSON.stringify({
           id: String(r.id),
-          title: String(r.title ?? ""),
+          title: String(r.title ?? ''),
           description: r.description ?? undefined,
-          status: String(r.status ?? "DRAFT"),
+          status: String(r.status ?? 'DRAFT'),
           propertyType: r.propertyType ?? undefined,
-          currency: String(r.currency ?? "PKR"),
+          currency: String(r.currency ?? 'PKR'),
           priceAmount: Number(r.priceAmount ?? 0),
           createdAt: toUnixSeconds(r.createdAt ?? new Date()),
         }),
       )
-      .join("\n");
+      .join('\n');
 
     const resultsInJSONLFormat = await typesense
       .collections(indexName)
       .documents()
-      .import(ndjson, { action: "upsert", dirty_values: "coerce_or_reject" });
+      .import(ndjson, { action: 'upsert', dirty_values: 'coerce_or_reject' });
 
     const failed = String(resultsInJSONLFormat)
-      .split("\n")
+      .split('\n')
       .map((l) => {
         try {
           return JSON.parse(l);
@@ -91,7 +89,7 @@ async function main() {
       .filter((x) => x && x.success === false);
 
     if (failed.length) {
-      console.warn("Some documents failed to import:", failed.slice(0, 5));
+      console.warn('Some documents failed to import:', failed.slice(0, 5));
     }
 
     offset += rows.length;

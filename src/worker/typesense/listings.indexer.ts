@@ -1,4 +1,4 @@
-import type { Client } from "typesense";
+import type { Client } from 'typesense';
 
 export type ListingIndexDocument = {
   id: string;

@@ -1,10 +1,10 @@
-import { Provider } from "@nestjs/common";
-import { Queue } from "bullmq";
-import type { ConnectionOptions } from "bullmq";
+import { Provider } from '@nestjs/common';
+import { Queue } from 'bullmq';
+import type { ConnectionOptions } from 'bullmq';
 
-import { DI } from "@app/di.tokens";
-import { APP_ENV } from "@shared/config/config.constants";
-import type { AppEnv } from "@shared/config/env";
+import { DI } from '@app/di.tokens';
+import { APP_ENV } from '@shared/config/config.constants';
+import type { AppEnv } from '@shared/config/env';
 
 export const ListingEventsQueueProvider: Provider = {
   provide: DI.ListingEventsQueue,
@@ -16,7 +16,7 @@ export const ListingEventsQueueProvider: Provider = {
         removeOnComplete: { age: 60 * 60 },
         removeOnFail: { age: 24 * 60 * 60 },
         attempts: 5,
-        backoff: { type: "exponential", delay: 500 },
+        backoff: { type: 'exponential', delay: 500 },
       },
     });
   },

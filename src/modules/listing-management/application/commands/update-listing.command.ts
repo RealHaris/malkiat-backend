@@ -8,7 +8,7 @@ export class UpdateListingCommand {
       priceAmount?: number;
       currency?: string;
       propertyType?: string | null;
-      status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+      status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     },
   ) {}
 }

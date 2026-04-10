@@ -1,8 +1,6 @@
-/* eslint-disable no-console */
+require('dotenv').config();
 
-require("dotenv").config();
-
-const { Client } = require("typesense");
+const { Client } = require('typesense');
 
 function required(name) {
   const v = process.env[name];
@@ -11,11 +9,11 @@ function required(name) {
 }
 
 async function main() {
-  const host = required("TYPESENSE_HOST");
-  const port = Number(required("TYPESENSE_PORT"));
-  const protocol = required("TYPESENSE_PROTOCOL");
-  const apiKey = required("TYPESENSE_ADMIN_API_KEY");
-  const indexName = process.env.TYPESENSE_COLLECTION_LISTINGS || "listings";
+  const host = required('TYPESENSE_HOST');
+  const port = Number(required('TYPESENSE_PORT'));
+  const protocol = required('TYPESENSE_PROTOCOL');
+  const apiKey = required('TYPESENSE_ADMIN_API_KEY');
+  const indexName = process.env.TYPESENSE_COLLECTION_LISTINGS || 'listings';
 
   const client = new Client({
     nodes: [{ host, port, protocol }],
@@ -27,26 +25,26 @@ async function main() {
   const schema = {
     name: indexName,
     fields: [
-      { name: "id", type: "string" },
-      { name: "title", type: "string" },
-      { name: "description", type: "string", optional: true },
-      { name: "status", type: "string", facet: true },
-      { name: "propertyType", type: "string", facet: true, optional: true },
-      { name: "currency", type: "string", facet: true },
-      { name: "priceAmount", type: "float" },
-      { name: "createdAt", type: "int64" },
+      { name: 'id', type: 'string' },
+      { name: 'title', type: 'string' },
+      { name: 'description', type: 'string', optional: true },
+      { name: 'status', type: 'string', facet: true },
+      { name: 'propertyType', type: 'string', facet: true, optional: true },
+      { name: 'currency', type: 'string', facet: true },
+      { name: 'priceAmount', type: 'float' },
+      { name: 'createdAt', type: 'int64' },
       {
-        name: "embedding",
-        type: "float[]",
+        name: 'embedding',
+        type: 'float[]',
         embed: {
-          from: ["title", "description"],
+          from: ['title', 'description'],
           model_config: {
-            model_name: "ts/all-MiniLM-L12-v2",
+            model_name: 'ts/all-MiniLM-L12-v2',
           },
         },
       },
     ],
-    default_sorting_field: "createdAt",
+    default_sorting_field: 'createdAt',
   };
 
   try {

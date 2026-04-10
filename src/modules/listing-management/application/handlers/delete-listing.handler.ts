@@ -1,11 +1,11 @@
-import { Inject } from "@nestjs/common";
-import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { Inject } from '@nestjs/common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-import { DI } from "@app/di.tokens";
-import { Listing } from "@modules/listing-management/domain/listing.aggregate";
-import { DeleteListingCommand } from "@modules/listing-management/application/commands/delete-listing.command";
-import type { ListingRepository } from "@modules/listing-management/application/ports/listing.repository";
-import type { ListingEventsPublisher } from "@modules/listing-management/application/ports/listing-events.publisher";
+import { DI } from '@app/di.tokens';
+import { Listing } from '@modules/listing-management/domain/listing.aggregate';
+import { DeleteListingCommand } from '@modules/listing-management/application/commands/delete-listing.command';
+import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
+import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
 
 @CommandHandler(DeleteListingCommand)
 export class DeleteListingHandler implements ICommandHandler<DeleteListingCommand> {
@@ -19,10 +19,10 @@ export class DeleteListingHandler implements ICommandHandler<DeleteListingComman
     const listing = Listing.create({
       id: command.payload.id,
       ownerId: command.payload.ownerId,
-      title: "(deleted)",
-      priceAmount: "0",
-      currency: "PKR",
-      status: "DRAFT",
+      title: '(deleted)',
+      priceAmount: '0',
+      currency: 'PKR',
+      status: 'DRAFT',
     });
 
     listing.markDeleted();

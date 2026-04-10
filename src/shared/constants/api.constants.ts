@@ -16,22 +16,22 @@ export const MESSAGES = {
   ERROR: {
     NOT_FOUND: (entity: string) => `${entity} not found`,
     UNAUTHORIZED: (roles: string) => `Unauthorized - requires ${roles} role`,
-    VALIDATION_ERROR: "Bad request - validation error",
+    VALIDATION_ERROR: 'Bad request - validation error',
   },
   DESCRIPTION: {
-    SESSION_TOKEN: "Session token",
+    SESSION_TOKEN: 'Session token',
   },
 } as const;
 
 export const API_OPERATIONS = {
-  CREATE_LISTING: { summary: "Create a new listing" },
-  UPDATE_LISTING: { summary: "Update an existing listing" },
-  DELETE_LISTING: { summary: "Delete a listing" },
-  DISCOVER_LISTINGS: { summary: "Discover listings" },
-  SEARCH_LISTINGS: { summary: "Search listings" },
-  GET_CURRENT_USER: { summary: "Get current user" },
-  PUBLIC_ROUTE: { summary: "Public route" },
-  OPTIONAL_AUTH_ROUTE: { summary: "Optional auth route" },
+  CREATE_LISTING: { summary: 'Create a new listing' },
+  UPDATE_LISTING: { summary: 'Update an existing listing' },
+  DELETE_LISTING: { summary: 'Delete a listing' },
+  DISCOVER_LISTINGS: { summary: 'Discover listings' },
+  SEARCH_LISTINGS: { summary: 'Search listings' },
+  GET_CURRENT_USER: { summary: 'Get current user' },
+  PUBLIC_ROUTE: { summary: 'Public route' },
+  OPTIONAL_AUTH_ROUTE: { summary: 'Optional auth route' },
 } as const;
 
 export const API_RESPONSES = {
@@ -65,48 +65,48 @@ export const API_RESPONSES = {
   },
   GET_CURRENT_USER: {
     status: HTTP_STATUS.OK,
-    description: "Returns the currently authenticated user",
+    description: 'Returns the currently authenticated user',
   },
   PUBLIC_ROUTE: {
     status: HTTP_STATUS.OK,
-    description: "Public endpoint, no authentication required",
+    description: 'Public endpoint, no authentication required',
   },
   OPTIONAL_AUTH_ROUTE: {
     status: HTTP_STATUS.OK,
-    description: "Returns authentication status",
+    description: 'Returns authentication status',
   },
 } as const;
 
 export const API_HEADERS = {
   AUTHORIZATION: {
-    name: "Authorization",
+    name: 'Authorization',
     description: MESSAGES.DESCRIPTION.SESSION_TOKEN,
     required: true,
   },
 } as const;
 
-export const LISTING_STATUS = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
-export const SORT_OPTIONS = ["newest", "price_asc", "price_desc", "relevance"] as const;
-export const DISCOVERY_SORT_OPTIONS = ["newest", "price_asc", "price_desc"] as const;
-export const SEARCH_SORT_OPTIONS = ["relevance", "newest", "price_asc", "price_desc"] as const;
+export const LISTING_STATUS = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
+export const SORT_OPTIONS = ['newest', 'price_asc', 'price_desc', 'relevance'] as const;
+export const DISCOVERY_SORT_OPTIONS = ['newest', 'price_asc', 'price_desc'] as const;
+export const SEARCH_SORT_OPTIONS = ['relevance', 'newest', 'price_asc', 'price_desc'] as const;
 
 export const PAGINATION = {
   DEFAULT_PAGE: 1,
   DEFAULT_PER_PAGE: 20,
 } as const;
 
-export const CURRENCY_CODES = ["USD", "EUR", "GBP", "AED"];
-export const PROPERTY_TYPES = ["apartment", "house", "villa", "condo"];
+export const CURRENCY_CODES = ['USD', 'EUR', 'GBP', 'AED'];
+export const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'condo'];
 
 export const VALIDATION_MESSAGES = {
   REQUIRED: (field: string) => `${field} is required`,
   INVALID_UUID: (field: string) => `${field} must be a valid UUID`,
-  INVALID_EMAIL: "Email must be valid",
+  INVALID_EMAIL: 'Email must be valid',
   MIN_LENGTH: (field: string, min: number) => `${field} must be at least ${min} characters`,
   MAX_LENGTH: (field: string, max: number) => `${field} must not exceed ${max} characters`,
   MIN_VALUE: (field: string, min: number) => `${field} must be at least ${min}`,
   MAX_VALUE: (field: string, max: number) => `${field} must not exceed ${max}`,
   INVALID_ENUM: (field: string, values: string[]) =>
-    `${field} must be one of: ${values.join(", ")}`,
+    `${field} must be one of: ${values.join(', ')}`,
   POSITIVE_NUMBER: (field: string) => `${field} must be a positive number`,
 } as const;
