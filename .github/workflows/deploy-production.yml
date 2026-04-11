@@ -60,13 +60,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          cat > ssm-commands.json <<EOF
+          cat > ssm-commands.json <<'EOF'
           {
             "commands": [
               "set -euo pipefail",
-              "AWS_REGION=${AWS_REGION}",
-              "SECRET_ID=${SECRET_ID}",
-              "IMAGE_URI=${IMAGE_URI}",
+              "AWS_REGION=us-east-1",
+              "SECRET_ID=malkiat/prod/app-env",
+              "IMAGE_URI=@@IMAGE_URI@@",
               "APP_DIR=/opt/malkiat/app",
               "mkdir -p \\\"\$APP_DIR\\\" /opt/malkiat/typesense-data",
               "if ! command -v docker >/dev/null 2>&1; then if command -v dnf >/dev/null 2>&1; then dnf install -y docker; elif command -v yum >/dev/null 2>&1; then yum install -y docker; elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y docker.io; else echo no supported package manager found; exit 1; fi; fi",
@@ -148,6 +148,8 @@ jobs:
             ]
           }
           EOF
+
+          sed -i "s|@@IMAGE_URI@@|$IMAGE_URI|g" ssm-commands.json
 
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
