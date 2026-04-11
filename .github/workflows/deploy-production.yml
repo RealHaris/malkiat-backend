@@ -19,7 +19,6 @@ permissions:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: malkiat-backend
-  SECRET_ID: malkiat/prod/app-env
   DEPLOY_ROLE_ARN: arn:aws:iam::915028408783:role/malkiat-github-actions-deploy-role
   PROD_INSTANCE_ID: i-0332143e110a204f5
 
@@ -42,7 +41,6 @@ jobs:
 
       - name: Build and push image
         id: image
-        working-directory: .
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
@@ -53,106 +51,40 @@ jobs:
           docker buildx build --platform linux/amd64 -t "$IMAGE_URI" --push .
           echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy through SSM
+      - name: Build SSM deploy command
         env:
-          INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
           IMAGE_URI: ${{ steps.image.outputs.image_uri }}
         run: |
           set -euo pipefail
-
-          cat > ssm-commands.json <<EOF
-          {
-            "commands": [
+          IMAGE_REGISTRY="$(echo "$IMAGE_URI" | cut -d/ -f1)"
+          COMMANDS_JSON=$(jq -nc \
+            --arg reg "$IMAGE_REGISTRY" \
+            --arg img "$IMAGE_URI" \
+            '[
               "set -euo pipefail",
-              "AWS_REGION=${AWS_REGION}",
-              "SECRET_ID=${SECRET_ID}",
-              "IMAGE_URI=${IMAGE_URI}",
               "APP_DIR=/opt/malkiat/app",
-              "mkdir -p \\\"\$APP_DIR\\\" /opt/malkiat/typesense-data",
+              "cd $APP_DIR",
               "if ! command -v docker >/dev/null 2>&1; then if command -v dnf >/dev/null 2>&1; then dnf install -y docker; elif command -v yum >/dev/null 2>&1; then yum install -y docker; elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y docker.io; else echo no supported package manager found; exit 1; fi; fi",
               "systemctl enable docker || true",
               "systemctl restart docker || systemctl start docker",
-              "if ! docker compose version >/dev/null 2>&1; then mkdir -p /usr/local/lib/docker/cli-plugins && curl -SL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose; fi",
-              "if ! command -v jq >/dev/null 2>&1; then (apt-get update && apt-get install -y jq python3) || true; fi",
-              "if ! command -v aws >/dev/null 2>&1; then curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip && unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install --update; fi",
-              "aws ecr get-login-password --region \\\"\$AWS_REGION\\\" | docker login --username AWS --password-stdin \\\"$(echo \$IMAGE_URI | cut -d/ -f1)\\\"",
-              "SECRET_JSON=$(aws secretsmanager get-secret-value --region \\\"\$AWS_REGION\\\" --secret-id \\\"\$SECRET_ID\\\" --query SecretString --output text)",
-              "echo \\\"\$SECRET_JSON\\\" | jq -r 'to_entries[] | \"\\(.key)=\\(.value|tostring)\"' > \$APP_DIR/.env.prod",
-              "echo \"NODE_ENV=production\" >> \$APP_DIR/.env.prod",
-              "echo \"AWS_REGION=us-east-1\" >> \$APP_DIR/.env.prod",
-              "echo \"AWSLOGS_GROUP_API=/malkiat/prod/api\" >> \$APP_DIR/.env.prod",
-              "echo \"AWSLOGS_GROUP_WORKER=/malkiat/prod/worker\" >> \$APP_DIR/.env.prod",
-              "echo \"AWSLOGS_GROUP_TYPESENSE=/malkiat/prod/typesense\" >> \$APP_DIR/.env.prod",
-              "echo \"PORT=3000\" >> \$APP_DIR/.env.prod",
-              "echo \"TYPESENSE_HOST=typesense\" >> \$APP_DIR/.env.prod",
-              "echo \"TYPESENSE_PORT=8108\" >> \$APP_DIR/.env.prod",
-              "echo \"TYPESENSE_PROTOCOL=http\" >> \$APP_DIR/.env.prod",
-              "echo \"TYPESENSE_COLLECTION_LISTINGS=listings\" >> \$APP_DIR/.env.prod",
-              "echo \"LISTING_EVENTS_QUEUE_NAME=listing-events\" >> \$APP_DIR/.env.prod",
-              "echo \"ECR_IMAGE_URI=\$IMAGE_URI\" >> \$APP_DIR/.env.prod",
-              "cat > \$APP_DIR/docker-compose.prod.yml <<'YAML'",
-              "services:",
-              "  typesense:",
-              "    image: typesense/typesense:30.1",
-              "    container_name: malkiat-typesense",
-              "    restart: unless-stopped",
-              "    command: '--data-dir /data --api-key=\${TYPESENSE_ADMIN_API_KEY} --enable-cors'",
-              "    env_file:",
-              "      - .env.prod",
-              "    volumes:",
-              "      - /opt/malkiat/typesense-data:/data",
-              "    logging:",
-              "      driver: awslogs",
-              "      options:",
-              "        awslogs-region: ${AWS_REGION}",
-              "        awslogs-group: ${AWSLOGS_GROUP_TYPESENSE}",
-              "        awslogs-stream: typesense",
-              "  api:",
-              "    image: \${ECR_IMAGE_URI}",
-              "    container_name: malkiat-api",
-              "    restart: unless-stopped",
-              "    depends_on:",
-              "      - typesense",
-              "    env_file:",
-              "      - .env.prod",
-              "    ports:",
-              "      - '3000:3000'",
-              "    command: ['node', 'dist/main.js']",
-              "    logging:",
-              "      driver: awslogs",
-              "      options:",
-              "        awslogs-region: ${AWS_REGION}",
-              "        awslogs-group: ${AWSLOGS_GROUP_API}",
-              "        awslogs-stream: api",
-              "  worker:",
-              "    image: \${ECR_IMAGE_URI}",
-              "    container_name: malkiat-worker",
-              "    restart: unless-stopped",
-              "    depends_on:",
-              "      - typesense",
-              "    env_file:",
-              "      - .env.prod",
-              "    command: ['node', 'dist/worker-main.js']",
-              "    logging:",
-              "      driver: awslogs",
-              "      options:",
-              "        awslogs-region: ${AWS_REGION}",
-              "        awslogs-group: ${AWSLOGS_GROUP_WORKER}",
-              "        awslogs-stream: worker",
-              "YAML",
-              "cd \$APP_DIR",
+              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \($reg)",
+              "export ECR_IMAGE_URI=\($img)",
               "docker compose -f docker-compose.prod.yml --env-file .env.prod pull",
               "docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --remove-orphans",
-              "sleep 6",
-              "curl -fsS http://localhost/ || true"
-            ]
-          }
-          EOF
+              "sleep 8",
+              "curl -fsS http://localhost:3000/users/public"
+            ]')
+          jq -nc --argjson commands "$COMMANDS_JSON" '{commands:$commands}' > .ssm-deploy-parameters.json
 
+      - name: Deploy through SSM
+        env:
+          INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
+        run: |
+          set -euo pipefail
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters file://ssm-commands.json \
+            --parameters file://.ssm-deploy-parameters.json \
             --query "Command.CommandId" \
             --output text)
 
@@ -179,23 +111,20 @@ jobs:
           INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
         run: |
           set -euo pipefail
+          INIT_JSON=$(jq -nc '[
+            "set -euo pipefail",
+            "cd /opt/malkiat/app",
+            "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run db:migrate",
+            "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run typesense:collection:listings",
+            "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run typesense:backfill:listings"
+          ]')
 
-          cat > ssm-init.json <<'EOF'
-          {
-            "commands": [
-              "set -euo pipefail",
-              "cd /opt/malkiat/app",
-              "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api npm run db:migrate",
-              "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api npm run typesense:collection:listings",
-              "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api npm run typesense:backfill:listings"
-            ]
-          }
-          EOF
+          jq -nc --argjson commands "$INIT_JSON" '{commands:$commands}' > .ssm-init-parameters.json
 
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters file://ssm-init.json \
+            --parameters file://.ssm-init-parameters.json \
             --query "Command.CommandId" \
             --output text)
 
