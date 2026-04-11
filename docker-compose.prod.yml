@@ -1,0 +1,52 @@
+services:
+  typesense:
+    image: typesense/typesense:30.1
+    container_name: malkiat-typesense
+    restart: unless-stopped
+    command: '--data-dir /data --api-key=${TYPESENSE_ADMIN_API_KEY} --enable-cors'
+    environment:
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_API_KEY: ${TYPESENSE_ADMIN_API_KEY}
+      TYPESENSE_ENABLE_CORS: 'true'
+    volumes:
+      - /opt/malkiat/typesense-data:/data
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${AWSLOGS_GROUP_TYPESENSE}
+        awslogs-stream: typesense
+
+  api:
+    image: ${ECR_IMAGE_URI}
+    container_name: malkiat-api
+    restart: unless-stopped
+    depends_on:
+      - typesense
+    env_file:
+      - .env.prod
+    ports:
+      - '3000:3000'
+    command: ["node", "dist/main.js"]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${AWSLOGS_GROUP_API}
+        awslogs-stream: api
+
+  worker:
+    image: ${ECR_IMAGE_URI}
+    container_name: malkiat-worker
+    restart: unless-stopped
+    depends_on:
+      - typesense
+    env_file:
+      - .env.prod
+    command: ["node", "dist/worker-main.js"]
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${AWS_REGION}
+        awslogs-group: ${AWSLOGS_GROUP_WORKER}
+        awslogs-stream: worker
