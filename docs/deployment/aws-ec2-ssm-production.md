@@ -48,7 +48,7 @@ This creates:
 - ALB Hosted Zone ID: `Z35SXDOTRQ7X7K`
 - Target group: `arn:aws:elasticloadbalancing:us-east-1:915028408783:targetgroup/malkiat-api-tg/d1f082184891642a`
 - ACM cert ARN (current): `arn:aws:acm:us-east-1:915028408783:certificate/e19085ec-ae3d-4953-af15-b4ac397b3ebc` for `api.malkiat.site`
-- ACM status: `PENDING_VALIDATION` (until DNS validation CNAME is added)
+- ACM status: `ISSUED`
 
 ## 2) Set production secret values
 
@@ -63,8 +63,8 @@ aws secretsmanager update-secret \
     "REDIS_URL":"redis://...",
     "BULLMQ_REDIS_URL":"redis://...",
     "BETTER_AUTH_SECRET":"...",
-    "BETTER_AUTH_BASE_URL":"http://<EC2_PUBLIC_IP>",
-    "APP_PUBLIC_URL":"https://your-frontend-domain",
+    "BETTER_AUTH_BASE_URL":"https://api.malkiat.site",
+    "APP_PUBLIC_URL":"https://www.malkiat.site",
     "RESEND_API_KEY":"...",
     "RESEND_FROM_EMAIL":"hello@realharis.works",
     "GOOGLE_CLIENT_ID":"...",
