@@ -1,4 +1,4 @@
-FROM oven/bun:1.2.15 AS build
+FROM oven/bun:1.3.11 AS build
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY scripts ./scripts
 
 RUN bun x nest build
 
-FROM oven/bun:1.2.15 AS runtime
+FROM oven/bun:1.3.11 AS runtime
 
 WORKDIR /app
 
