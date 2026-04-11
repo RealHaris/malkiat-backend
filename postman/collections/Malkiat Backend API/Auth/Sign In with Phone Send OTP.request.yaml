@@ -1,0 +1,14 @@
+$kind: http-request
+name: 'Sign In with Phone (Send OTP)'
+method: POST
+url: '{{baseUrl}}/api/auth/phone-number/send-otp'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "phoneNumber": "+923001234567"
+    }

@@ -1,5 +1,7 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, index, pgEnum } from 'drizzle-orm/pg-core';
+
+export const platformRoleEnum = pgEnum('platform_role', ['admin', 'user']);
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -9,6 +11,8 @@ export const user = pgTable('user', {
   image: text('image'),
   phoneNumber: text('phone_number').unique(),
   phoneNumberVerified: boolean('phone_number_verified').default(false),
+  platformRole: platformRoleEnum('platform_role').default('user').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

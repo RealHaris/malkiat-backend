@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/auth/sign-in/social'
+order: 13000
+queryParams:
+  - key: provider
+    value: google
+  - key: callbackURL
+    value: 'http://localhost:3001/auth/callback'

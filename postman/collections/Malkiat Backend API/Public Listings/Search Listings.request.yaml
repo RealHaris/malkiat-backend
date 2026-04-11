@@ -1,0 +1,19 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/public/listings/search'
+order: 3000
+queryParams:
+  - key: q
+    value: house
+  - key: page
+    value: '1'
+  - key: perPage
+    value: '20'
+  - key: city
+    value: Karachi
+  - key: sort
+    value: relevance
+  - key: minPrice
+    value: '1000000'
+  - key: maxPrice
+    value: '50000000'

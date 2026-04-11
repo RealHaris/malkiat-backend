@@ -1,0 +1,35 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/listings'
+order: 2000
+headers:
+  - key: Authorization
+    value: '{{authToken}}'
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Beautiful 3-Bedroom House in DHA",
+      "description": "A spacious and well-maintained house located in DHA Phase 6.",
+      "purpose": "SELL",
+      "propertyCategory": "HOME",
+      "propertySubtypeId": "{{propertySubtypeId}}",
+      "city": "Karachi",
+      "areaId": "{{areaId}}",
+      "locationText": "DHA Phase 6, Block A, Karachi",
+      "areaValue": 10,
+      "areaUnit": "MARLA",
+      "priceAmount": 25000000,
+      "currency": "PKR",
+      "installmentAvailable": false,
+      "readyForPossession": true,
+      "bedroomsCount": 3,
+      "bathroomsCount": 3,
+      "amenityIds": [],
+      "imagesJson": [],
+      "platforms": ["ZAMEEN"],
+      "latitude": 24.8607,
+      "longitude": 67.0011
+    }
