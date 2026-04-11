@@ -90,7 +90,7 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+
+- Bun 1.3.11
 - PostgreSQL
 - Redis Stack
 - Typesense
@@ -99,7 +99,7 @@ src/
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Copy environment template
 cp .env.example .env
@@ -149,29 +149,29 @@ LISTING_EVENTS_QUEUE_NAME=listing-events
 
 ```bash
 # Run API server with auto-reload
-npm run start:api:dev
+bun run start:api:dev
 
 # Run worker with auto-reload
-npm run start:worker:dev
+bun run start:worker:dev
 
 # Run type checking
-npm run typecheck
+bun run typecheck
 
 # Run linting
-npm run lint
+bun run lint
 ```
 
 #### Production
 
 ```bash
 # Build the project
-npm run build
+bun run build
 
 # Start API server
-npm run start:prod
+bun run start:prod
 
 # Start worker
-npm run start:worker
+bun run start:worker
 ```
 
 ## Database Setup
@@ -180,26 +180,26 @@ npm run start:worker
 
 ```bash
 # Generate migration
-npm run db:generate
+bun run db:generate
 
 # Run migration
-npm run db:migrate
+bun run db:migrate
 
 # Push changes (development only)
-npm run db:push
+bun run db:push
 
 # Open Drizzle Studio
-npm run db:studio
+bun run db:studio
 ```
 
 ### Typesense Setup
 
 ```bash
 # Create listings collection
-npm run typesense:collection:listings
+bun run typesense:collection:listings
 
 # Backfill existing listings
-npm run typesense:backfill:listings
+bun run typesense:backfill:listings
 ```
 
 ## API Endpoints
