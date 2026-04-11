@@ -47,8 +47,7 @@ This creates:
 - ALB DNS: `malkiat-api-alb-764099008.us-east-1.elb.amazonaws.com`
 - ALB Hosted Zone ID: `Z35SXDOTRQ7X7K`
 - Target group: `arn:aws:elasticloadbalancing:us-east-1:915028408783:targetgroup/malkiat-api-tg/d1f082184891642a`
-- ACM cert ARN (old): `arn:aws:acm:us-east-1:915028408783:certificate/e19085ec-ae3d-4953-af15-b4ac397b3ebc` for `api.malkiat.site`
-- ACM cert ARN (current): `arn:aws:acm:us-east-1:915028408783:certificate/c85b953d-4664-49e0-994d-a70d66e57a21` for `api.malkiate.site`
+- ACM cert ARN (current): `arn:aws:acm:us-east-1:915028408783:certificate/e19085ec-ae3d-4953-af15-b4ac397b3ebc` for `api.malkiat.site`
 - ACM status: `PENDING_VALIDATION` (until DNS validation CNAME is added)
 
 ## 2) Set production secret values
@@ -138,8 +137,8 @@ Current checks:
 ### 1) ACM certificate validation record (must be DNS-only)
 
 - Type: `CNAME`
-- Name: `_7dec0640d48640f3febc529917d3ed04.api.malkiate.site`
-- Target: `_1dfbd7cbccc301258bf43025ecc2b460.jkddzztszm.acm-validations.aws`
+- Name: `_f9d6fdb92cf03ead93b9e8668d56335f.api.malkiat.site`
+- Target: `_dbd7fff195c72ea0adb82eaeed5f2ac0.jkddzztszm.acm-validations.aws`
 - Proxy status in Cloudflare: `DNS only` (gray cloud)
 
 ### 2) API domain to ALB record
@@ -149,7 +148,7 @@ Current checks:
 - Target: `malkiat-api-alb-764099008.us-east-1.elb.amazonaws.com`
 - Proxy status in Cloudflare: `DNS only` for ACM validation and initial test. You can later switch to proxied if desired.
 
-For this record, create it under the `malkiate.site` zone (not `malkiat.site`).
+For this record, create it under the `malkiat.site` zone.
 
 After ACM becomes `ISSUED`, create HTTPS listener on ALB using that certificate and switch HTTP listener to redirect to HTTPS.
 
