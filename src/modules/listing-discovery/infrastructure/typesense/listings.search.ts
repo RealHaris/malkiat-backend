@@ -8,8 +8,7 @@ type DiscoverParams = {
   page: number;
   perPage: number;
   sort?: 'newest' | 'price_asc' | 'price_desc';
-  propertyType?: string;
-  currency?: string;
+  city: string;
 };
 
 type SearchParams = {
@@ -18,8 +17,7 @@ type SearchParams = {
   page: number;
   perPage: number;
   sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';
-  propertyType?: string;
-  currency?: string;
+  city: string;
   minPrice?: number;
   maxPrice?: number;
 };
@@ -27,25 +25,39 @@ type SearchParams = {
 function toListingCard(doc: any): ListingCard {
   return {
     id: String(doc.id),
+    ownerId: String(doc.ownerId ?? ''),
     title: String(doc.title ?? ''),
     description: doc.description ?? null,
+    purpose: String(doc.purpose ?? 'SELL') as any,
+    propertyCategory: String(doc.propertyCategory ?? 'HOME') as any,
+    propertySubtypeId: String(doc.propertySubtypeId ?? ''),
+    city: String(doc.city ?? 'Karachi'),
+    areaId: String(doc.areaId ?? ''),
+    locationText: String(doc.locationText ?? ''),
+    areaValue: Number(doc.areaValue ?? 0),
+    areaUnit: String(doc.areaUnit ?? 'MARLA') as any,
+    areaSqft: Number(doc.areaSqft ?? 0),
     priceAmount: Number(doc.priceAmount ?? 0),
-    currency: String(doc.currency ?? 'PKR'),
-    propertyType: doc.propertyType ?? null,
+    currency: String(doc.currency ?? 'PKR') as any,
+    installmentAvailable: Boolean(doc.installmentAvailable ?? false),
+    readyForPossession: Boolean(doc.readyForPossession ?? false),
+    bedroomsCount: doc.bedroomsCount ?? null,
+    bathroomsCount: doc.bathroomsCount ?? null,
+    imagesJson: (doc.imagesJson as string[] | undefined) ?? [],
+    videoUrl: doc.videoUrl ?? null,
+    platforms: (doc.platforms as string[] | undefined) ?? ['ZAMEEN'],
     status: String(doc.status ?? 'DRAFT'),
+    publishedAt: doc.publishedAt ? Number(doc.publishedAt) : null,
     createdAt: Number(doc.createdAt ?? 0),
   };
 }
 
 function buildFilterBy(input: {
-  propertyType?: string;
-  currency?: string;
+  city: string;
   minPrice?: number;
   maxPrice?: number;
 }): string {
-  const clauses: string[] = ['status:=PUBLISHED'];
-  if (input.propertyType) clauses.push(`propertyType:=${escapeFilterValue(input.propertyType)}`);
-  if (input.currency) clauses.push(`currency:=${escapeFilterValue(input.currency)}`);
+  const clauses: string[] = ['status:=PUBLISHED', `city:=${escapeFilterValue(input.city)}`];
 
   if (typeof input.minPrice === 'number') clauses.push(`priceAmount:>=${input.minPrice}`);
   if (typeof input.maxPrice === 'number') clauses.push(`priceAmount:<=${input.maxPrice}`);
@@ -85,8 +97,7 @@ export class TypesenseListingsSearch {
         q: '*',
         query_by: 'title',
         filter_by: buildFilterBy({
-          propertyType: input.propertyType,
-          currency: input.currency,
+          city: input.city,
         }),
         sort_by: sortByForDiscover(input.sort),
         page: input.page,
@@ -110,8 +121,7 @@ export class TypesenseListingsSearch {
         q: input.q,
         query_by: 'title,description,embedding',
         filter_by: buildFilterBy({
-          propertyType: input.propertyType,
-          currency: input.currency,
+          city: input.city,
           minPrice: input.minPrice,
           maxPrice: input.maxPrice,
         }),

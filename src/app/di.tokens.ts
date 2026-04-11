@@ -12,4 +12,5 @@ export const DI = {
 
   ListingRepository: Symbol('ListingRepository'),
   ListingEventsPublisher: Symbol('ListingEventsPublisher'),
+  AgencyRepository: Symbol('AgencyRepository'),
 } as const;

@@ -27,9 +27,8 @@ export class DiscoverListingsHandler implements IQueryHandler<DiscoverListingsQu
       collection: this.env.TYPESENSE_COLLECTION_LISTINGS,
       page,
       perPage,
+      city: query.input.city,
       sort: query.input.sort,
-      propertyType: query.input.propertyType,
-      currency: query.input.currency,
     });
   }
 }

@@ -4,6 +4,7 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { Queue } from 'bullmq';
 
 import { DI } from '@app/di.tokens';
+import { AgenciesModule } from '@modules/identity-access/agencies/agencies.module';
 
 import { CreateListingHandler } from './application/handlers/create-listing.handler';
 import { DeleteListingHandler } from './application/handlers/delete-listing.handler';
@@ -15,7 +16,7 @@ import { ListingsController } from './presentation/listings.controller';
 const commandHandlers = [CreateListingHandler, UpdateListingHandler, DeleteListingHandler];
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, AgenciesModule],
   controllers: [ListingsController],
   providers: [
     ...commandHandlers,

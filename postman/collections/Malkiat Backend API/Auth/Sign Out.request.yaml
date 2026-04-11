@@ -1,0 +1,7 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/auth/sign-out'
+order: 3000
+headers:
+  - key: Authorization
+    value: '{{authToken}}'

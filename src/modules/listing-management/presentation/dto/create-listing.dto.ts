@@ -1,31 +1,52 @@
 import { z } from 'zod';
 import {
+  AREA_UNITS,
   CURRENCY_CODES,
-  PROPERTY_TYPES,
+  LISTING_PURPOSES,
+  PROPERTY_CATEGORIES,
   VALIDATION_MESSAGES,
 } from '@shared/constants/api.constants';
 
 const createListingSchema = z.object({
-  id: z.string().uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Listing ID') }),
-  ownerId: z.string().uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Owner ID') }),
   title: z
     .string({ required_error: VALIDATION_MESSAGES.REQUIRED('Title') })
     .min(3, VALIDATION_MESSAGES.MIN_LENGTH('Title', 3))
     .max(200, VALIDATION_MESSAGES.MAX_LENGTH('Title', 200)),
   description: z.string().max(2000, VALIDATION_MESSAGES.MAX_LENGTH('Description', 2000)).optional(),
+  purpose: z.enum(LISTING_PURPOSES),
+  propertyCategory: z.enum(PROPERTY_CATEGORIES),
+  propertySubtypeId: z.string().uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Property subtype ID') }),
+  city: z.string().optional().default('Karachi').refine((v) => v === 'Karachi', {
+    message: VALIDATION_MESSAGES.KARACHI_REQUIRED,
+  }),
+  areaId: z.string().uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Area ID') }),
+  locationText: z
+    .string({ required_error: VALIDATION_MESSAGES.REQUIRED('Location') })
+    .min(3, VALIDATION_MESSAGES.MIN_LENGTH('Location', 3))
+    .max(500, VALIDATION_MESSAGES.MAX_LENGTH('Location', 500)),
+  areaValue: z
+    .number({ required_error: VALIDATION_MESSAGES.REQUIRED('Area value') })
+    .positive(VALIDATION_MESSAGES.POSITIVE_NUMBER('Area value')),
+  areaUnit: z.enum(AREA_UNITS),
   priceAmount: z
     .number({ required_error: VALIDATION_MESSAGES.REQUIRED('Price amount') })
     .positive(VALIDATION_MESSAGES.POSITIVE_NUMBER('Price amount')),
   currency: z
-    .enum([...CURRENCY_CODES] as [string, ...string[]], {
-      message: VALIDATION_MESSAGES.INVALID_ENUM('Currency', CURRENCY_CODES),
+    .enum(CURRENCY_CODES, {
+      message: VALIDATION_MESSAGES.INVALID_ENUM('Currency', [...CURRENCY_CODES]),
     })
     .optional(),
-  propertyType: z
-    .enum([...PROPERTY_TYPES] as [string, ...string[]], {
-      message: VALIDATION_MESSAGES.INVALID_ENUM('Property type', PROPERTY_TYPES),
-    })
-    .optional(),
+  agencyId: z.string().uuid().optional(),
+  installmentAvailable: z.boolean().optional().default(false),
+  readyForPossession: z.boolean().optional().default(false),
+  bedroomsCount: z.number().int().min(0).max(10).optional(),
+  bathroomsCount: z.number().int().min(1).max(6).optional(),
+  amenityIds: z.array(z.string().uuid()).optional().default([]),
+  imagesJson: z.array(z.string().url()).max(5).optional().default([]),
+  videoUrl: z.string().url().optional(),
+  platforms: z.array(z.string()).optional().default(['ZAMEEN']),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
 });
 
 export type CreateListingDto = z.infer<typeof createListingSchema>;

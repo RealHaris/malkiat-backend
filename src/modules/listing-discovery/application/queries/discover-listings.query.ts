@@ -3,9 +3,8 @@ export class DiscoverListingsQuery {
     public readonly input: {
       page?: number;
       perPage?: number;
+      city: string;
       sort?: 'newest' | 'price_asc' | 'price_desc';
-      propertyType?: string;
-      currency?: string;
     },
   ) {}
 }
