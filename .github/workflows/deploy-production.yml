@@ -51,41 +51,40 @@ jobs:
           docker buildx build --platform linux/amd64 -t "$IMAGE_URI" --push .
           echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
-      - name: Deploy through SSM
+      - name: Build SSM deploy command
         env:
-          INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
           IMAGE_URI: ${{ steps.image.outputs.image_uri }}
         run: |
           set -euo pipefail
           IMAGE_REGISTRY="$(echo "$IMAGE_URI" | cut -d/ -f1)"
-
-          read -r -d '' COMMANDS_JSON <<EOF || true
-          {
-            "commands": [
+          COMMANDS_JSON=$(jq -nc \
+            --arg reg "$IMAGE_REGISTRY" \
+            --arg img "$IMAGE_URI" \
+            '[
               "set -euo pipefail",
               "APP_DIR=/opt/malkiat/app",
-              "test -f \\\"\$APP_DIR/.env.prod\\\"",
-              "test -f \\\"\$APP_DIR/docker-compose.prod.yml\\\"",
+              "cd $APP_DIR",
               "if ! command -v docker >/dev/null 2>&1; then if command -v dnf >/dev/null 2>&1; then dnf install -y docker; elif command -v yum >/dev/null 2>&1; then yum install -y docker; elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y docker.io; else echo no supported package manager found; exit 1; fi; fi",
               "systemctl enable docker || true",
               "systemctl restart docker || systemctl start docker",
-              "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${IMAGE_REGISTRY}",
-              "if grep -q '^ECR_IMAGE_URI=' \"\$APP_DIR/.env.prod\"; then sed -i 's#^ECR_IMAGE_URI=.*#ECR_IMAGE_URI=${IMAGE_URI}#' \"\$APP_DIR/.env.prod\"; else echo 'ECR_IMAGE_URI=${IMAGE_URI}' >> \"\$APP_DIR/.env.prod\"; fi",
-              "cd \"\$APP_DIR\"",
+              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \($reg)",
+              "export ECR_IMAGE_URI=\($img)",
               "docker compose -f docker-compose.prod.yml --env-file .env.prod pull",
               "docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --remove-orphans",
               "sleep 8",
               "curl -fsS http://localhost:3000/users/public"
-            ]
-          }
-          EOF
+            ]')
+          jq -nc --argjson commands "$COMMANDS_JSON" '{commands:$commands}' > .ssm-deploy-parameters.json
 
-          printf '%s\n' "$COMMANDS_JSON" > ssm-commands.json
-
+      - name: Deploy through SSM
+        env:
+          INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
+        run: |
+          set -euo pipefail
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters file://ssm-commands.json \
+            --parameters file://.ssm-deploy-parameters.json \
             --query "Command.CommandId" \
             --output text)
 
@@ -112,23 +111,20 @@ jobs:
           INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
         run: |
           set -euo pipefail
+          INIT_JSON=$(jq -nc '[
+            "set -euo pipefail",
+            "cd /opt/malkiat/app",
+            "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run db:migrate",
+            "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run typesense:collection:listings",
+            "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run typesense:backfill:listings"
+          ]')
 
-          cat > ssm-init.json <<'EOF'
-          {
-            "commands": [
-              "set -euo pipefail",
-              "cd /opt/malkiat/app",
-              "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api npm run db:migrate",
-              "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api npm run typesense:collection:listings",
-              "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api npm run typesense:backfill:listings"
-            ]
-          }
-          EOF
+          jq -nc --argjson commands "$INIT_JSON" '{commands:$commands}' > .ssm-init-parameters.json
 
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters file://ssm-init.json \
+            --parameters file://.ssm-init-parameters.json \
             --query "Command.CommandId" \
             --output text)
 

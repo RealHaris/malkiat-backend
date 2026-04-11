@@ -27,7 +27,7 @@ services:
       - .env.prod
     ports:
       - '3000:3000'
-    command: ["node", "dist/main.js"]
+    command: ["bun", "dist/main.js"]
     logging:
       driver: awslogs
       options:
@@ -43,7 +43,7 @@ services:
       - typesense
     env_file:
       - .env.prod
-    command: ["node", "dist/worker-main.js"]
+    command: ["bun", "dist/worker-main.js"]
     logging:
       driver: awslogs
       options:

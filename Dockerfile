@@ -1,22 +1,22 @@
-FROM node:22-alpine AS build
+FROM oven/bun:1.2.15 AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm install --no-audit --no-fund
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 COPY nest-cli.json tsconfig.json tsconfig.build.json tsconfig.tsgo.json drizzle.config.ts ./
 COPY src ./src
 COPY scripts ./scripts
 
-RUN npx nest build
+RUN bun x nest build
 
-FROM node:22-alpine AS runtime
+FROM oven/bun:1.2.15 AS runtime
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm install --no-audit --no-fund
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/scripts ./scripts
@@ -27,4 +27,4 @@ EXPOSE 3000
 
 ENV NODE_ENV=production
 
-CMD ["node", "dist/main.js"]
+CMD ["bun", "dist/main.js"]
