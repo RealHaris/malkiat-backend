@@ -15,9 +15,18 @@ async function bootstrap() {
 
     const env = app.get<AppEnv>(APP_ENV);
 
-    const allowedOrigins = [env.APP_PUBLIC_URL, env.BETTER_AUTH_BASE_URL].filter(
-      (origin): origin is string => !!origin && origin !== 'undefined',
-    );
+    const extraAllowedOrigins = (env.CORS_ALLOWED_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0 && origin !== 'undefined');
+
+    const allowedOrigins = [
+      env.APP_PUBLIC_URL,
+      env.BETTER_AUTH_BASE_URL,
+      ...extraAllowedOrigins,
+    ].filter((origin, index, all): origin is string => {
+      return !!origin && origin !== 'undefined' && all.indexOf(origin) === index;
+    });
 
     app.enableCors({
       origin: allowedOrigins,

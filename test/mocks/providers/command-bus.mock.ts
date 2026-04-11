@@ -55,6 +55,8 @@ export const mockAppEnv: jest.Mocked<AppEnv> = {
   LISTING_EVENTS_QUEUE_NAME: 'listing-events',
   BETTER_AUTH_SECRET: 'test-secret',
   BETTER_AUTH_BASE_URL: 'http://localhost:3002/auth',
+  APP_PUBLIC_URL: 'http://localhost:3001',
+  CORS_ALLOWED_ORIGINS: 'http://localhost:3001,https://www.malkiat.site',
   RESEND_FROM_EMAIL: 'hello@example.com',
 };
 
