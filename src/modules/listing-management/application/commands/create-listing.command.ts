@@ -4,6 +4,7 @@ export class CreateListingCommand {
       id?: string;
       actorUserId?: string;
       ownerId: string;
+      action?: 'draft' | 'submit';
       agencyId?: string;
       title: string;
       description?: string | null;
@@ -24,6 +25,7 @@ export class CreateListingCommand {
       bedroomsCount?: number;
       bathroomsCount?: number;
       amenityIds?: string[];
+      amenityValues?: Record<string, string | number | boolean>;
       imagesJson?: string[];
       videoUrl?: string | null;
       platforms?: string[];

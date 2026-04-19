@@ -88,7 +88,7 @@ export const API_HEADERS = {
   },
 } as const;
 
-export const LISTING_STATUS = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
+export const LISTING_STATUS = ['DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'ARCHIVED'] as const;
 export const SORT_OPTIONS = ['newest', 'price_asc', 'price_desc', 'relevance'] as const;
 export const DISCOVERY_SORT_OPTIONS = ['newest', 'price_asc', 'price_desc'] as const;
 export const SEARCH_SORT_OPTIONS = ['relevance', 'newest', 'price_asc', 'price_desc'] as const;

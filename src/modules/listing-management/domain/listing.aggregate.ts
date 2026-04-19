@@ -28,6 +28,7 @@ export type ListingProps = {
   videoUrl?: string | null;
   platforms: string[];
   amenityIds?: string[];
+  amenityValues?: Record<string, string | number | boolean>;
   status: ListingStatus;
   publishedAt?: Date | null;
   createdAt?: Date;

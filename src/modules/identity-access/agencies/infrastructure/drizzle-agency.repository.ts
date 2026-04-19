@@ -110,6 +110,32 @@ export class DrizzleAgencyRepository {
     return members;
   }
 
+  async listActiveAgenciesForUser(userId: string) {
+    return this.db
+      .select({
+        id: agencies.id,
+        name: agencies.name,
+        slug: agencies.slug,
+        description: agencies.description,
+        logoUrl: agencies.logoUrl,
+        ownerUserId: agencies.ownerUserId,
+        status: agencies.status,
+        createdByUserId: agencies.createdByUserId,
+        createdAt: agencies.createdAt,
+        updatedAt: agencies.updatedAt,
+        membershipRole: agencyMemberships.membershipRole,
+      })
+      .from(agencyMemberships)
+      .innerJoin(agencies, eq(agencies.id, agencyMemberships.agencyId))
+      .where(
+        and(
+          eq(agencyMemberships.userId, userId),
+          eq(agencyMemberships.status, 'active'),
+          eq(agencies.status, 'active'),
+        ),
+      );
+  }
+
   async updateAgency(
     agencyId: string,
     patch: {
