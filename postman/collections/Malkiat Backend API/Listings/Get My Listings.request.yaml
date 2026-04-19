@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/listings/me'
+order: 1000
+headers:
+  - key: Authorization
+    value: '{{authToken}}'
+queryParams:
+  - key: page
+    value: '1'
+  - key: perPage
+    value: '20'

@@ -2,7 +2,8 @@ export class DeleteListingCommand {
   constructor(
     public readonly payload: {
       id: string;
-      ownerId: string;
+      actorUserId?: string;
+      ownerId?: string;
     },
   ) {}
 }

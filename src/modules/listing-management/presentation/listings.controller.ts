@@ -1,11 +1,14 @@
-import { Body, Controller, Delete, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { Roles } from '@thallesp/nestjs-better-auth';
+import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
+import { Inject } from '@nestjs/common';
 
-import { ROLES } from '@shared/auth/roles';
+import { DI } from '@app/di.tokens';
 import { API_OPERATIONS, API_RESPONSES, API_HEADERS } from '@shared/constants/api.constants';
 import { ZodValidationPipe } from '@shared/pipes/zod-validation.pipe';
+import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
+import { z } from 'zod';
 
 import { CreateListingCommand } from '@modules/listing-management/application/commands/create-listing.command';
 import { DeleteListingCommand } from '@modules/listing-management/application/commands/delete-listing.command';
@@ -19,9 +22,67 @@ import { deleteListingSchema } from '@modules/listing-management/presentation/dt
 
 @ApiTags('listings')
 @Controller('listings')
-@Roles([ROLES.ADMIN, ROLES.AGENT])
 export class ListingsController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    @Inject(DI.ListingRepository) private readonly listingRepo: ListingRepository,
+  ) {}
+
+  @Get('me')
+  @ApiOperation(API_OPERATIONS.GET_MY_LISTINGS)
+  @ApiResponse(API_RESPONSES.RETRIEVED('Listings'))
+  @ApiHeader(API_HEADERS.AUTHORIZATION)
+  async mine(
+    @Session() session: UserSession,
+    @Query(
+      new ZodValidationPipe(
+        z.object({
+          page: z
+            .string()
+            .optional()
+            .transform((val) => (val ? parseInt(val, 10) : 1))
+            .pipe(z.number().min(1)),
+          perPage: z
+            .string()
+            .optional()
+            .transform((val) => (val ? parseInt(val, 10) : 20))
+            .pipe(z.number().min(1).max(100)),
+          q: z.string().trim().max(160).optional(),
+          status: z
+            .union([z.string(), z.array(z.string())])
+            .optional()
+            .transform((value) => {
+              if (!value) return [] as string[];
+              return Array.isArray(value) ? value : [value];
+            })
+            .pipe(z.array(z.enum(['DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'ARCHIVED'])).optional()),
+        }),
+      ),
+    )
+    q: {
+      page: number;
+      perPage: number;
+      q?: string;
+      status?: Array<'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'>;
+    },
+  ) {
+    const result = await this.listingRepo.listByOwner({
+      ownerId: session.user.id,
+      page: q.page,
+      perPage: q.perPage,
+      q: q.q,
+      statuses: q.status,
+    });
+
+    return {
+      items: result.items.map((x) => x.snapshot),
+      page: q.page,
+      perPage: q.perPage,
+      total: result.total,
+      q: q.q ?? '',
+      status: q.status ?? [],
+    };
+  }
 
   @Post()
   @ApiOperation(API_OPERATIONS.CREATE_LISTING)
@@ -29,8 +90,17 @@ export class ListingsController {
   @ApiResponse(API_RESPONSES.UNAUTHORIZED('admin or agent'))
   @ApiResponse(API_RESPONSES.VALIDATION_ERROR)
   @ApiHeader(API_HEADERS.AUTHORIZATION)
-  async create(@Body(new ZodValidationPipe(createListingSchema)) dto: CreateListingDto) {
-    const result: { id: string } = await this.commandBus.execute(new CreateListingCommand(dto));
+  async create(
+    @Session() session: UserSession,
+    @Body(new ZodValidationPipe(createListingSchema)) dto: CreateListingDto,
+  ) {
+    const result: { id: string } = await this.commandBus.execute(
+      new CreateListingCommand({
+        ...dto,
+        actorUserId: session.user.id,
+        ownerId: session.user.id,
+      }),
+    );
     return result;
   }
 
@@ -41,8 +111,11 @@ export class ListingsController {
   @ApiResponse(API_RESPONSES.NOT_FOUND('Listing'))
   @ApiResponse(API_RESPONSES.VALIDATION_ERROR)
   @ApiHeader(API_HEADERS.AUTHORIZATION)
-  async update(@Body(new ZodValidationPipe(updateListingSchema)) dto: UpdateListingDto) {
-    await this.commandBus.execute(new UpdateListingCommand(dto));
+  async update(
+    @Session() session: UserSession,
+    @Body(new ZodValidationPipe(updateListingSchema)) dto: UpdateListingDto,
+  ) {
+    await this.commandBus.execute(new UpdateListingCommand({ ...dto, actorUserId: session.user.id }));
     return { ok: true };
   }
 
@@ -53,8 +126,11 @@ export class ListingsController {
   @ApiResponse(API_RESPONSES.NOT_FOUND('Listing'))
   @ApiResponse(API_RESPONSES.VALIDATION_ERROR)
   @ApiHeader(API_HEADERS.AUTHORIZATION)
-  async delete(@Body(new ZodValidationPipe(deleteListingSchema)) dto: DeleteListingDto) {
-    await this.commandBus.execute(new DeleteListingCommand(dto));
+  async delete(
+    @Session() session: UserSession,
+    @Body(new ZodValidationPipe(deleteListingSchema)) dto: DeleteListingDto,
+  ) {
+    await this.commandBus.execute(new DeleteListingCommand({ ...dto, actorUserId: session.user.id }));
     return { ok: true };
   }
 }

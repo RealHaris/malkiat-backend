@@ -1,0 +1,13 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/public/listings'
+order: 1000
+queryParams:
+  - key: page
+    value: '1'
+  - key: perPage
+    value: '20'
+  - key: city
+    value: Karachi
+  - key: sort
+    value: newest

@@ -26,11 +26,10 @@ export class SearchListingsHandler implements IQueryHandler<SearchListingsQuery>
     return search.search({
       collection: this.env.TYPESENSE_COLLECTION_LISTINGS,
       q: query.input.q,
+      city: query.input.city,
       page,
       perPage,
       sort: query.input.sort,
-      propertyType: query.input.propertyType,
-      currency: query.input.currency,
       minPrice: query.input.minPrice,
       maxPrice: query.input.maxPrice,
     });

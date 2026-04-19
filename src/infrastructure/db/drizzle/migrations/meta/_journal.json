@@ -15,6 +15,62 @@
       "when": 1775851601488,
       "tag": "0001_add_phone_number_to_user",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775903977939,
+      "tag": "0002_listings_schema_v2",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775907557729,
+      "tag": "0003_auth_user_profile_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776001000000,
+      "tag": "0004_user_agency_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775907787289,
+      "tag": "0005_listings_owner_creator_agency",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776100000000,
+      "tag": "0006_seed_karachi_areas",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776200000000,
+      "tag": "0007_listing_under_review_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1776300000000,
+      "tag": "0008_amenities_structured_values",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1776400000000,
+      "tag": "0009_seed_amenities_catalog",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,7 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/auth/verify-email'
+order: 7000
+queryParams:
+  - key: token
+    value: '{{verifyToken}}'

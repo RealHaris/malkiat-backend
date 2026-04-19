@@ -1,0 +1,14 @@
+# Use this workspace to collaborate
+workspace:
+  id: ea606880-0ce1-482c-bdf3-69f9f7b9f288
+
+localResources:
+  collections:
+    - ../docs/postman-collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+cloudResources:
+  environments:
+    ../postman/environments/New Environment.environment.yaml: 557f6429-a135-44c1-9c9f-ec704ef2cf50
+  collections:
+    ../postman/collections/Malkiat Backend API: 19181825-aaa84058-0be9-4564-9707-347dfba148f6

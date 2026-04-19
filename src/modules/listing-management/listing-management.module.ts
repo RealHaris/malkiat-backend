@@ -4,6 +4,7 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { Queue } from 'bullmq';
 
 import { DI } from '@app/di.tokens';
+import { AgenciesModule } from '@modules/identity-access/agencies/agencies.module';
 
 import { CreateListingHandler } from './application/handlers/create-listing.handler';
 import { DeleteListingHandler } from './application/handlers/delete-listing.handler';
@@ -11,12 +12,13 @@ import { UpdateListingHandler } from './application/handlers/update-listing.hand
 import { DrizzleListingRepository } from './infrastructure/drizzle/drizzle-listing.repository';
 import { BullmqListingEventsPublisher } from './infrastructure/queue/bullmq-listing-events.publisher';
 import { ListingsController } from './presentation/listings.controller';
+import { ListingMediaController } from './presentation/listing-media.controller';
 
 const commandHandlers = [CreateListingHandler, UpdateListingHandler, DeleteListingHandler];
 
 @Module({
-  imports: [CqrsModule],
-  controllers: [ListingsController],
+  imports: [CqrsModule, AgenciesModule],
+  controllers: [ListingsController, ListingMediaController],
   providers: [
     ...commandHandlers,
     {

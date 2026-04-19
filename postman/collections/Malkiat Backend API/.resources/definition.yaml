@@ -1,0 +1,14 @@
+$kind: collection
+name: Malkiat Backend API
+variables:
+  baseUrl: http://localhost:3000
+  authToken: ""
+  resetToken: ""
+  verifyToken: ""
+  propertySubtypeId: ""
+  areaId: ""
+  listingId: ""
+auth:
+  - id: 8f17aa20-641e-437d-a65e-fe91f62285c1
+    type: bearer
+    name: Bearer Token

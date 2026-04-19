@@ -27,8 +27,11 @@ export const API_OPERATIONS = {
   CREATE_LISTING: { summary: 'Create a new listing' },
   UPDATE_LISTING: { summary: 'Update an existing listing' },
   DELETE_LISTING: { summary: 'Delete a listing' },
+  GET_MY_LISTINGS: { summary: 'Get authenticated user listings' },
+  GET_PUBLIC_LISTINGS: { summary: 'Get public listings' },
   DISCOVER_LISTINGS: { summary: 'Discover listings' },
   SEARCH_LISTINGS: { summary: 'Search listings' },
+  GET_PUBLIC_AREAS: { summary: 'Get public areas' },
   GET_CURRENT_USER: { summary: 'Get current user' },
   PUBLIC_ROUTE: { summary: 'Public route' },
   OPTIONAL_AUTH_ROUTE: { summary: 'Optional auth route' },
@@ -85,7 +88,7 @@ export const API_HEADERS = {
   },
 } as const;
 
-export const LISTING_STATUS = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
+export const LISTING_STATUS = ['DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'ARCHIVED'] as const;
 export const SORT_OPTIONS = ['newest', 'price_asc', 'price_desc', 'relevance'] as const;
 export const DISCOVERY_SORT_OPTIONS = ['newest', 'price_asc', 'price_desc'] as const;
 export const SEARCH_SORT_OPTIONS = ['relevance', 'newest', 'price_asc', 'price_desc'] as const;
@@ -95,8 +98,31 @@ export const PAGINATION = {
   DEFAULT_PER_PAGE: 20,
 } as const;
 
-export const CURRENCY_CODES = ['USD', 'EUR', 'GBP', 'AED'];
-export const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'condo'];
+export const PROPERTY_CATEGORIES = ['HOME', 'PLOT', 'COMMERCIAL'] as const;
+export const LISTING_PURPOSES = ['SELL', 'RENT'] as const;
+export const AREA_UNITS = ['MARLA', 'SQFT', 'SQYD', 'KANAL'] as const;
+export const CURRENCY_CODES = ['PKR'] as const;
+export const PROPERTY_TYPES = [
+  'house',
+  'flat',
+  'upper-portion',
+  'lower-portion',
+  'farm-house',
+  'room',
+  'penthouse',
+  'residential-plot',
+  'commercial-plot',
+  'agricultural-land',
+  'industrial-land',
+  'plot-file',
+  'plot-form',
+  'office',
+  'shop',
+  'warehouse',
+  'factory',
+  'building',
+  'other',
+] as const;
 
 export const VALIDATION_MESSAGES = {
   REQUIRED: (field: string) => `${field} is required`,
@@ -109,4 +135,5 @@ export const VALIDATION_MESSAGES = {
   INVALID_ENUM: (field: string, values: string[]) =>
     `${field} must be one of: ${values.join(', ')}`,
   POSITIVE_NUMBER: (field: string) => `${field} must be a positive number`,
+  KARACHI_REQUIRED: 'City must be Karachi',
 } as const;
