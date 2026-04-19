@@ -6,6 +6,7 @@ import { DrizzleListingRepository } from '@modules/listing-management/infrastruc
 
 import { PublicListingsController } from './presentation/public-listings.controller';
 import { PublicAreasController } from './presentation/public-areas.controller';
+import { PublicListingMetadataController } from './presentation/public-listing-metadata.controller';
 import { DiscoverListingsHandler } from './application/handlers/discover-listings.handler';
 import { SearchListingsHandler } from './application/handlers/search-listings.handler';
 
@@ -13,7 +14,7 @@ const queryHandlers = [DiscoverListingsHandler, SearchListingsHandler];
 
 @Module({
   imports: [CqrsModule],
-  controllers: [PublicListingsController, PublicAreasController],
+  controllers: [PublicListingsController, PublicAreasController, PublicListingMetadataController],
   providers: [
     ...queryHandlers,
     {

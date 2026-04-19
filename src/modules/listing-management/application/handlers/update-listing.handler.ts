@@ -4,7 +4,6 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
 
 import { DI } from '@app/di.tokens';
-import { Listing } from '@modules/listing-management/domain/listing.aggregate';
 import { UpdateListingCommand } from '@modules/listing-management/application/commands/update-listing.command';
 import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
 import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
@@ -114,7 +113,9 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
     const publishedAt =
       command.payload.status === 'PUBLISHED'
         ? listing.snapshot.publishedAt ?? new Date()
-        : command.payload.status === 'DRAFT' || command.payload.status === 'ARCHIVED'
+        : command.payload.status === 'DRAFT' ||
+            command.payload.status === 'UNDER_REVIEW' ||
+            command.payload.status === 'ARCHIVED'
           ? null
           : undefined;
 

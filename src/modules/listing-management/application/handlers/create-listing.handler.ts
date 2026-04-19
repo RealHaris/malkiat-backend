@@ -73,6 +73,7 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
     }
 
     const listingId = command.payload.id ?? randomUUID();
+    const status = command.payload.action === 'submit' ? 'UNDER_REVIEW' : 'DRAFT';
     const listing = Listing.create({
       id: listingId,
       createdByUserId: actorUserId,
@@ -101,7 +102,8 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
       videoUrl: command.payload.videoUrl ?? null,
       platforms: command.payload.platforms ?? ['ZAMEEN'],
       amenityIds: command.payload.amenityIds ?? [],
-      status: 'DRAFT',
+      amenityValues: command.payload.amenityValues ?? {},
+      status,
     });
 
     await this.repo.create(listing);

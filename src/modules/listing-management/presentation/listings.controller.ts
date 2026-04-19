@@ -47,15 +47,31 @@ export class ListingsController {
             .optional()
             .transform((val) => (val ? parseInt(val, 10) : 20))
             .pipe(z.number().min(1).max(100)),
+          q: z.string().trim().max(160).optional(),
+          status: z
+            .union([z.string(), z.array(z.string())])
+            .optional()
+            .transform((value) => {
+              if (!value) return [] as string[];
+              return Array.isArray(value) ? value : [value];
+            })
+            .pipe(z.array(z.enum(['DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'ARCHIVED'])).optional()),
         }),
       ),
     )
-    q: { page: number; perPage: number },
+    q: {
+      page: number;
+      perPage: number;
+      q?: string;
+      status?: Array<'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'>;
+    },
   ) {
     const result = await this.listingRepo.listByOwner({
       ownerId: session.user.id,
       page: q.page,
       perPage: q.perPage,
+      q: q.q,
+      statuses: q.status,
     });
 
     return {
@@ -63,6 +79,8 @@ export class ListingsController {
       page: q.page,
       perPage: q.perPage,
       total: result.total,
+      q: q.q ?? '',
+      status: q.status ?? [],
     };
   }
 

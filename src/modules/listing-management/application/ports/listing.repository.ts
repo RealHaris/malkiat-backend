@@ -4,7 +4,13 @@ export interface ListingRepository {
   create(listing: Listing): Promise<void>;
   update(listing: Listing): Promise<void>;
   findById(listingId: string): Promise<Listing | null>;
-  listByOwner(input: { ownerId: string; page: number; perPage: number }): Promise<{ items: Listing[]; total: number }>;
+  listByOwner(input: {
+    ownerId: string;
+    page: number;
+    perPage: number;
+    q?: string;
+    statuses?: Array<'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'>;
+  }): Promise<{ items: Listing[]; total: number }>;
   listPublic(input: {
     city: string;
     page: number;

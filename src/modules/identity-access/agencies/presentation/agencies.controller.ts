@@ -103,6 +103,17 @@ export class AgenciesController {
     return { members };
   }
 
+  @Get('me/list')
+  async listMyAgencies(@Session() session: UserSession) {
+    const actor = await this.agencyRepo.findUserById(session.user.id);
+    if (!actor || !actor.isActive) {
+      throw new ForbiddenException('Inactive users cannot access agencies');
+    }
+
+    const agencies = await this.agencyRepo.listActiveAgenciesForUser(session.user.id);
+    return { agencies };
+  }
+
   @Post(':agencyId/members')
   async addMembers(
     @Session() session: UserSession,

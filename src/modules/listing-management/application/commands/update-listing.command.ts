@@ -28,7 +28,7 @@ export class UpdateListingCommand {
       imagesJson?: string[];
       videoUrl?: string | null;
       platforms?: string[];
-      status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+      status?: 'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED';
       publishedAt?: Date | null;
     },
   ) {}

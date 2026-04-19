@@ -1,7 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
-  integer,
   jsonb,
   numeric,
   pgEnum,
@@ -18,12 +17,18 @@ import {
 import { user } from './better-auth';
 import { agencies } from './agencies';
 
-export const listingStatusEnum = pgEnum('listing_status', ['DRAFT', 'PUBLISHED', 'ARCHIVED']);
+export const listingStatusEnum = pgEnum('listing_status', [
+  'DRAFT',
+  'UNDER_REVIEW',
+  'PUBLISHED',
+  'ARCHIVED',
+]);
 export const listingPurposeEnum = pgEnum('listing_purpose', ['SELL', 'RENT']);
 export const propertyCategoryEnum = pgEnum('property_category', ['HOME', 'PLOT', 'COMMERCIAL']);
 export const areaUnitEnum = pgEnum('area_unit', ['MARLA', 'SQFT', 'SQYD', 'KANAL']);
 export const currencyEnum = pgEnum('listing_currency', ['PKR']);
 export const platformEnum = pgEnum('listing_platform', ['ZAMEEN']);
+export const amenityValueTypeEnum = pgEnum('amenity_value_type', ['boolean', 'text', 'number', 'select']);
 
 export const propertySubtypes = pgTable(
   'property_subtypes',
@@ -59,6 +64,10 @@ export const amenities = pgTable('amenities', {
   id: uuid('id').defaultRandom().primaryKey(),
   slug: varchar('slug', { length: 64 }).notNull().unique(),
   name: varchar('name', { length: 120 }).notNull(),
+  category: varchar('category', { length: 120 }).default('Other Facilities').notNull(),
+  subcategory: varchar('subcategory', { length: 120 }),
+  valueType: amenityValueTypeEnum('value_type').default('boolean').notNull(),
+  valueOptions: jsonb('value_options').$type<string[]>().default(sql`'[]'::jsonb`).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -115,6 +124,7 @@ export const listingAmenities = pgTable(
     amenityId: uuid('amenity_id')
       .notNull()
       .references(() => amenities.id, { onDelete: 'restrict' }),
+    valueJson: jsonb('value_json').$type<string | number | boolean | null>(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.listingId, table.amenityId], name: 'listing_amenities_pk' })],

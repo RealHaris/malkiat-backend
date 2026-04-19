@@ -12,12 +12,13 @@ import { UpdateListingHandler } from './application/handlers/update-listing.hand
 import { DrizzleListingRepository } from './infrastructure/drizzle/drizzle-listing.repository';
 import { BullmqListingEventsPublisher } from './infrastructure/queue/bullmq-listing-events.publisher';
 import { ListingsController } from './presentation/listings.controller';
+import { ListingMediaController } from './presentation/listing-media.controller';
 
 const commandHandlers = [CreateListingHandler, UpdateListingHandler, DeleteListingHandler];
 
 @Module({
   imports: [CqrsModule, AgenciesModule],
-  controllers: [ListingsController],
+  controllers: [ListingsController, ListingMediaController],
   providers: [
     ...commandHandlers,
     {

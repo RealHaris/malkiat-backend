@@ -50,6 +50,27 @@
       "when": 1776100000000,
       "tag": "0006_seed_karachi_areas",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1776200000000,
+      "tag": "0007_listing_under_review_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1776300000000,
+      "tag": "0008_amenities_structured_values",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1776400000000,
+      "tag": "0009_seed_amenities_catalog",
+      "breakpoints": true
     }
   ]
 }

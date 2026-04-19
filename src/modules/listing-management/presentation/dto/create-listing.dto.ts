@@ -8,6 +8,7 @@ import {
 } from '@shared/constants/api.constants';
 
 const createListingSchema = z.object({
+  action: z.enum(['draft', 'submit']).optional().default('draft'),
   title: z
     .string({ required_error: VALIDATION_MESSAGES.REQUIRED('Title') })
     .min(3, VALIDATION_MESSAGES.MIN_LENGTH('Title', 3))
@@ -42,6 +43,7 @@ const createListingSchema = z.object({
   bedroomsCount: z.number().int().min(0).max(10).optional(),
   bathroomsCount: z.number().int().min(1).max(6).optional(),
   amenityIds: z.array(z.string().uuid()).optional().default([]),
+  amenityValues: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
   imagesJson: z.array(z.string().url()).max(5).optional().default([]),
   videoUrl: z.string().url().optional(),
   platforms: z.array(z.string()).optional().default(['ZAMEEN']),
