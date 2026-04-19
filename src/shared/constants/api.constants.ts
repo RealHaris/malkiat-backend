@@ -31,6 +31,7 @@ export const API_OPERATIONS = {
   GET_PUBLIC_LISTINGS: { summary: 'Get public listings' },
   DISCOVER_LISTINGS: { summary: 'Discover listings' },
   SEARCH_LISTINGS: { summary: 'Search listings' },
+  GET_PUBLIC_AREAS: { summary: 'Get public areas' },
   GET_CURRENT_USER: { summary: 'Get current user' },
   PUBLIC_ROUTE: { summary: 'Public route' },
   OPTIONAL_AUTH_ROUTE: { summary: 'Optional auth route' },
