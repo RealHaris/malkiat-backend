@@ -43,6 +43,13 @@
       "when": 1775907787289,
       "tag": "0005_listings_owner_creator_agency",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776100000000,
+      "tag": "0006_seed_karachi_areas",
+      "breakpoints": true
     }
   ]
 }
