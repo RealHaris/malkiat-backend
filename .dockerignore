@@ -3,6 +3,9 @@ dist
 coverage
 .git
 .github
+.vscode
+.idea
+.DS_Store
 logs
 typesense-data
 .env
@@ -13,3 +16,9 @@ yarn-debug.log*
 yarn-error.log*
 Dockerfile*
 docker-compose*.yml
+tmp
+tmp/**
+test
+docs
+postman
+*.md
