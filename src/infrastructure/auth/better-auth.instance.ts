@@ -23,6 +23,39 @@ export function createBetterAuthInstance(
   const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
   const appPublicUrl = env.APP_PUBLIC_URL || 'http://localhost:3001';
 
+  const parsedExtraTrustedOrigins = (env.CORS_ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0 && origin !== 'undefined');
+
+  const getCrossSubdomainCookieDomain = () => {
+    if (env.BETTER_AUTH_COOKIE_DOMAIN) {
+      const configuredDomain = env.BETTER_AUTH_COOKIE_DOMAIN.trim().toLowerCase();
+      if (!configuredDomain) return null;
+      return configuredDomain.startsWith('.') ? configuredDomain : `.${configuredDomain}`;
+    }
+
+    try {
+      const hostname = new URL(appPublicUrl).hostname.toLowerCase();
+
+      // Cross-subdomain cookies are only valid on real domains, not localhost/IPs.
+      if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+        return null;
+      }
+
+      const apexDomain = hostname.startsWith('www.') ? hostname.slice(4) : hostname;
+      if (!apexDomain.includes('.')) {
+        return null;
+      }
+
+      return `.${apexDomain}`;
+    } catch {
+      return null;
+    }
+  };
+
+  const crossSubdomainCookieDomain = getCrossSubdomainCookieDomain();
+
   const toFrontendUrl = (url: string) => {
     try {
       const target = new URL(url);
@@ -35,7 +68,7 @@ export function createBetterAuthInstance(
     }
   };
 
-  const trustedOrigins = [env.BETTER_AUTH_BASE_URL, appPublicUrl].filter(
+  const trustedOrigins = [env.BETTER_AUTH_BASE_URL, appPublicUrl, ...parsedExtraTrustedOrigins].filter(
     (origin): origin is string => !!origin && origin !== 'undefined',
   );
 
@@ -43,6 +76,14 @@ export function createBetterAuthInstance(
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_BASE_URL,
     trustedOrigins,
+    advanced: crossSubdomainCookieDomain
+      ? {
+          crossSubDomainCookies: {
+            enabled: true,
+            domain: crossSubdomainCookieDomain,
+          },
+        }
+      : undefined,
     database: drizzleAdapter(db, {
       provider: 'pg',
       usePlural: false,
