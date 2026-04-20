@@ -48,7 +48,13 @@ jobs:
           set -euo pipefail
           IMAGE_URI="$REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG"
           docker buildx create --use --name malkiat-builder >/dev/null 2>&1 || docker buildx use malkiat-builder
-          docker buildx build --platform linux/amd64 -t "$IMAGE_URI" --push .
+          docker buildx build \
+            --platform linux/amd64 \
+            --cache-from type=gha,scope=malkiat-backend \
+            --cache-to type=gha,mode=max,scope=malkiat-backend \
+            -t "$IMAGE_URI" \
+            --push \
+            .
           echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
       - name: Build SSM deploy command
