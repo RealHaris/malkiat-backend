@@ -24,6 +24,7 @@ const envSchema = z.object({
 
   BETTER_AUTH_SECRET: z.string().default('dev-secret-change-in-production'),
   BETTER_AUTH_BASE_URL: z.string().default('http://localhost:3000'),
+  BETTER_AUTH_COOKIE_DOMAIN: z.string().optional(),
   APP_PUBLIC_URL: z.string().default('http://localhost:3001'),
   CORS_ALLOWED_ORIGINS: z.string().optional(),
 
