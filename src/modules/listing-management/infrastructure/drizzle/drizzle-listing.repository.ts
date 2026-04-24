@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, gte, ilike, inArray, lte, or } from 'drizzle
 
 import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
 import type { Listing } from '@modules/listing-management/domain/listing.aggregate';
+import type { ListingStatus } from '@modules/listing-management/domain/listing-status';
 import { listings, listingAmenities } from '@infra/db/drizzle/schema';
 import { Listing as ListingAggregate } from '@modules/listing-management/domain/listing.aggregate';
 
@@ -34,6 +35,8 @@ export class DrizzleListingRepository implements ListingRepository {
       areaSqft: String(row.areaSqft),
       priceAmount: String(row.priceAmount),
       currency: row.currency,
+      condition: row.condition ?? null,
+      availability: row.availability ?? null,
       installmentAvailable: Boolean(row.installmentAvailable),
       readyForPossession: Boolean(row.readyForPossession),
       bedroomsCount: row.bedroomsCount ?? null,
@@ -75,6 +78,8 @@ export class DrizzleListingRepository implements ListingRepository {
       areaSqft: s.areaSqft,
       priceAmount: s.priceAmount,
       currency: s.currency,
+      condition: s.condition ?? null,
+      availability: s.availability ?? null,
       installmentAvailable: s.installmentAvailable,
       readyForPossession: s.readyForPossession,
       bedroomsCount: s.bedroomsCount ?? null,
@@ -118,6 +123,8 @@ export class DrizzleListingRepository implements ListingRepository {
         areaSqft: s.areaSqft,
         priceAmount: s.priceAmount,
         currency: s.currency,
+        condition: s.condition ?? null,
+        availability: s.availability ?? null,
         installmentAvailable: s.installmentAvailable,
         readyForPossession: s.readyForPossession,
         bedroomsCount: s.bedroomsCount ?? null,
@@ -164,7 +171,11 @@ export class DrizzleListingRepository implements ListingRepository {
       }
     }
 
-    return this.toAggregate(row, amenityRows.map((x) => String(x.amenityId)), amenityValues);
+    return this.toAggregate(
+      row,
+      amenityRows.map((x) => String(x.amenityId)),
+      amenityValues,
+    );
   }
 
   async listByOwner(input: {
@@ -172,14 +183,51 @@ export class DrizzleListingRepository implements ListingRepository {
     page: number;
     perPage: number;
     q?: string;
-    statuses?: Array<'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'>;
+    statuses?: ListingStatus[];
   }): Promise<{ items: Listing[]; total: number }> {
     const offset = (input.page - 1) * input.perPage;
     const queryText = input.q?.trim();
     const whereExpr = and(
       eq(listings.ownerId, input.ownerId),
       queryText
-        ? or(ilike(listings.title, `%${queryText}%`), ilike(listings.locationText, `%${queryText}%`))
+        ? or(
+            ilike(listings.title, `%${queryText}%`),
+            ilike(listings.locationText, `%${queryText}%`),
+          )
+        : undefined,
+      input.statuses?.length ? inArray(listings.status, input.statuses) : undefined,
+    );
+
+    const [rows, totals] = await Promise.all([
+      this.db
+        .select()
+        .from(listings)
+        .where(whereExpr)
+        .orderBy(desc(listings.createdAt))
+        .limit(input.perPage)
+        .offset(offset),
+      this.db.select({ total: count() }).from(listings).where(whereExpr),
+    ]);
+
+    const items = rows.map((row) => this.toAggregate(row));
+
+    return { items, total: Number(totals[0]?.total ?? 0) };
+  }
+
+  async listAll(input: {
+    page: number;
+    perPage: number;
+    q?: string;
+    statuses?: ListingStatus[];
+  }): Promise<{ items: Listing[]; total: number }> {
+    const offset = (input.page - 1) * input.perPage;
+    const queryText = input.q?.trim();
+    const whereExpr = and(
+      queryText
+        ? or(
+            ilike(listings.title, `%${queryText}%`),
+            ilike(listings.locationText, `%${queryText}%`),
+          )
         : undefined,
       input.statuses?.length ? inArray(listings.status, input.statuses) : undefined,
     );
@@ -254,8 +302,12 @@ export class DrizzleListingRepository implements ListingRepository {
       eq(listings.status, 'PUBLISHED'),
       eq(listings.city, input.city),
       input.areaId ? eq(listings.areaId, input.areaId) : undefined,
-      typeof input.minPrice === 'number' ? gte(listings.priceAmount, input.minPrice.toString()) : undefined,
-      typeof input.maxPrice === 'number' ? lte(listings.priceAmount, input.maxPrice.toString()) : undefined,
+      typeof input.minPrice === 'number'
+        ? gte(listings.priceAmount, input.minPrice.toString())
+        : undefined,
+      typeof input.maxPrice === 'number'
+        ? lte(listings.priceAmount, input.maxPrice.toString())
+        : undefined,
       or(ilike(listings.title, `%${input.q}%`), ilike(listings.description, `%${input.q}%`)),
     );
 

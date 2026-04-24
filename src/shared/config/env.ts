@@ -27,6 +27,7 @@ const envSchema = z.object({
   BETTER_AUTH_COOKIE_DOMAIN: z.string().optional(),
   APP_PUBLIC_URL: z.string().default('http://localhost:3001'),
   CORS_ALLOWED_ORIGINS: z.string().optional(),
+  BLOB_READ_WRITE_TOKEN: z.string().optional(),
 
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().default('hello@realharis.works'),

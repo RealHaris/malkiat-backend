@@ -6,7 +6,10 @@ import { DeleteListingCommand } from '@modules/listing-management/application/co
 import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
 import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
 import { DrizzleAgencyRepository } from '@modules/identity-access/agencies/infrastructure/drizzle-agency.repository';
-import { canPostForAgency, isPlatformAdmin } from '@modules/identity-access/agencies/presentation/agency-authz';
+import {
+  canPostForAgency,
+  isPlatformAdmin,
+} from '@modules/identity-access/agencies/presentation/agency-authz';
 
 @CommandHandler(DeleteListingCommand)
 export class DeleteListingHandler implements ICommandHandler<DeleteListingCommand> {
@@ -50,9 +53,13 @@ export class DeleteListingHandler implements ICommandHandler<DeleteListingComman
       throw new ForbiddenException('You are not allowed to delete this listing');
     }
 
-    listing.markDeleted();
+    if (!actorIsAdmin && listing.snapshot.status === 'PUBLISHED') {
+      throw new ForbiddenException('Only admin can delete a published listing');
+    }
 
-    await this.repo.deleteById(command.payload.id);
+    listing.update({ status: 'DELETED', publishedAt: null });
+
+    await this.repo.update(listing);
     await this.publisher.publish(listing.pullDomainEvents());
   }
 }

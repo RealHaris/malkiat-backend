@@ -68,9 +68,11 @@ export function createBetterAuthInstance(
     }
   };
 
-  const trustedOrigins = [env.BETTER_AUTH_BASE_URL, appPublicUrl, ...parsedExtraTrustedOrigins].filter(
-    (origin): origin is string => !!origin && origin !== 'undefined',
-  );
+  const trustedOrigins = [
+    env.BETTER_AUTH_BASE_URL,
+    appPublicUrl,
+    ...parsedExtraTrustedOrigins,
+  ].filter((origin): origin is string => !!origin && origin !== 'undefined');
 
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET,

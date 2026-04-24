@@ -20,6 +20,12 @@ export class CreateListingCommand {
       areaUnit: 'MARLA' | 'SQFT' | 'SQYD' | 'KANAL';
       priceAmount: number;
       currency?: 'PKR';
+      condition?: 'BRAND_NEW' | 'EXCELLENT' | 'GOOD' | 'NEED_MINOR_WORK' | 'NEED_MAJOR_WORK';
+      availability?: {
+        days: Array<
+          'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
+        >;
+      } | null;
       installmentAvailable?: boolean;
       readyForPossession?: boolean;
       bedroomsCount?: number;

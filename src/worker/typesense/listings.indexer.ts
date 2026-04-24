@@ -4,7 +4,11 @@ export type ListingIndexDocument = {
   id: string;
   title: string;
   description?: string | null;
+  purpose: string;
   status: string;
+  condition?: string | null;
+  bedroomsCount?: number | null;
+  availabilityDays?: string[];
   propertyCategory?: string | null;
   propertySubtypeId?: string | null;
   city?: string | null;
@@ -29,6 +33,10 @@ export class ListingsIndexer {
       .upsert({
         ...doc,
         description: doc.description ?? undefined,
+        purpose: doc.purpose,
+        condition: doc.condition ?? undefined,
+        bedroomsCount: doc.bedroomsCount ?? undefined,
+        availabilityDays: doc.availabilityDays?.length ? doc.availabilityDays : undefined,
         propertyCategory: doc.propertyCategory ?? undefined,
         propertySubtypeId: doc.propertySubtypeId ?? undefined,
         city: doc.city ?? undefined,
@@ -38,6 +46,13 @@ export class ListingsIndexer {
   }
 
   async deleteById(id: string): Promise<void> {
-    await this.client.collections(this.collection).documents(id).delete();
+    try {
+      await this.client.collections(this.collection).documents(id).delete();
+    } catch (error: any) {
+      if (error?.httpStatus === 404) {
+        return;
+      }
+      throw error;
+    }
   }
 }

@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
@@ -11,14 +22,46 @@ import type { ListingRepository } from '@modules/listing-management/application/
 import { z } from 'zod';
 
 import { CreateListingCommand } from '@modules/listing-management/application/commands/create-listing.command';
+import { ChangeListingStatusCommand } from '@modules/listing-management/application/commands/change-listing-status.command';
 import { DeleteListingCommand } from '@modules/listing-management/application/commands/delete-listing.command';
 import { UpdateListingCommand } from '@modules/listing-management/application/commands/update-listing.command';
+import type { ListingStatus } from '@modules/listing-management/domain/listing-status';
+import { DrizzleAgencyRepository } from '@modules/identity-access/agencies/infrastructure/drizzle-agency.repository';
+import {
+  canPostForAgency,
+  isPlatformAdmin,
+} from '@modules/identity-access/agencies/presentation/agency-authz';
 import type { CreateListingDto } from '@modules/listing-management/presentation/dto/create-listing.dto';
+import type { ChangeListingStatusDto } from '@modules/listing-management/presentation/dto/change-listing-status.dto';
 import type { DeleteListingDto } from '@modules/listing-management/presentation/dto/delete-listing.dto';
 import type { UpdateListingDto } from '@modules/listing-management/presentation/dto/update-listing.dto';
+import { changeListingStatusSchema } from '@modules/listing-management/presentation/dto/change-listing-status.dto';
 import { createListingSchema } from '@modules/listing-management/presentation/dto/create-listing.dto';
 import { updateListingSchema } from '@modules/listing-management/presentation/dto/update-listing.dto';
 import { deleteListingSchema } from '@modules/listing-management/presentation/dto/delete-listing.dto';
+
+const listingStatuses = ['DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'UNPUBLISHED', 'DELETED'] as const;
+const listingQuerySchema = z.object({
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 1))
+    .pipe(z.number().min(1)),
+  perPage: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : 20))
+    .pipe(z.number().min(1).max(100)),
+  q: z.string().trim().max(160).optional(),
+  status: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((value) => {
+      if (!value) return [] as string[];
+      return Array.isArray(value) ? value : [value];
+    })
+    .pipe(z.array(z.enum(listingStatuses)).optional()),
+});
 
 @ApiTags('listings')
 @Controller('listings')
@@ -26,6 +69,8 @@ export class ListingsController {
   constructor(
     private readonly commandBus: CommandBus,
     @Inject(DI.ListingRepository) private readonly listingRepo: ListingRepository,
+    @Inject(DI.AgencyRepository)
+    private readonly agencyRepo: DrizzleAgencyRepository,
   ) {}
 
   @Get('me')
@@ -34,36 +79,12 @@ export class ListingsController {
   @ApiHeader(API_HEADERS.AUTHORIZATION)
   async mine(
     @Session() session: UserSession,
-    @Query(
-      new ZodValidationPipe(
-        z.object({
-          page: z
-            .string()
-            .optional()
-            .transform((val) => (val ? parseInt(val, 10) : 1))
-            .pipe(z.number().min(1)),
-          perPage: z
-            .string()
-            .optional()
-            .transform((val) => (val ? parseInt(val, 10) : 20))
-            .pipe(z.number().min(1).max(100)),
-          q: z.string().trim().max(160).optional(),
-          status: z
-            .union([z.string(), z.array(z.string())])
-            .optional()
-            .transform((value) => {
-              if (!value) return [] as string[];
-              return Array.isArray(value) ? value : [value];
-            })
-            .pipe(z.array(z.enum(['DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'ARCHIVED'])).optional()),
-        }),
-      ),
-    )
+    @Query(new ZodValidationPipe(listingQuerySchema))
     q: {
       page: number;
       perPage: number;
       q?: string;
-      status?: Array<'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'>;
+      status?: ListingStatus[];
     },
   ) {
     const result = await this.listingRepo.listByOwner({
@@ -82,6 +103,55 @@ export class ListingsController {
       q: q.q ?? '',
       status: q.status ?? [],
     };
+  }
+
+  @Get('admin')
+  @ApiOperation(API_OPERATIONS.GET_ADMIN_LISTINGS)
+  @ApiResponse(API_RESPONSES.RETRIEVED('Listings'))
+  @ApiHeader(API_HEADERS.AUTHORIZATION)
+  async adminList(
+    @Session() session: UserSession,
+    @Query(new ZodValidationPipe(listingQuerySchema))
+    q: {
+      page: number;
+      perPage: number;
+      q?: string;
+      status?: ListingStatus[];
+    },
+  ) {
+    await this.assertAdmin(session.user.id);
+
+    const result = await this.listingRepo.listAll({
+      page: q.page,
+      perPage: q.perPage,
+      q: q.q,
+      statuses: q.status,
+    });
+
+    return {
+      items: result.items.map((x) => x.snapshot),
+      page: q.page,
+      perPage: q.perPage,
+      total: result.total,
+      q: q.q ?? '',
+      status: q.status ?? [],
+    };
+  }
+
+  @Get(':id')
+  @ApiOperation(API_OPERATIONS.GET_LISTING_BY_ID)
+  @ApiResponse(API_RESPONSES.RETRIEVED('Listing'))
+  @ApiResponse(API_RESPONSES.NOT_FOUND('Listing'))
+  @ApiHeader(API_HEADERS.AUTHORIZATION)
+  async byId(@Session() session: UserSession, @Param('id') id: string) {
+    const listing = await this.listingRepo.findById(id);
+    if (!listing) {
+      throw new NotFoundException('Listing not found');
+    }
+
+    await this.assertCanManageListing(session.user.id, listing.snapshot);
+
+    return { item: listing.snapshot };
   }
 
   @Post()
@@ -115,7 +185,43 @@ export class ListingsController {
     @Session() session: UserSession,
     @Body(new ZodValidationPipe(updateListingSchema)) dto: UpdateListingDto,
   ) {
-    await this.commandBus.execute(new UpdateListingCommand({ ...dto, actorUserId: session.user.id }));
+    await this.commandBus.execute(
+      new UpdateListingCommand({ ...dto, actorUserId: session.user.id }),
+    );
+    return { ok: true };
+  }
+
+  @Patch(':id/status')
+  @ApiOperation(API_OPERATIONS.UPDATE_LISTING_STATUS)
+  @ApiResponse(API_RESPONSES.UPDATED('Listing'))
+  @ApiResponse(API_RESPONSES.UNAUTHORIZED('admin or agent'))
+  @ApiResponse(API_RESPONSES.NOT_FOUND('Listing'))
+  @ApiResponse(API_RESPONSES.VALIDATION_ERROR)
+  @ApiHeader(API_HEADERS.AUTHORIZATION)
+  async updateStatus(
+    @Session() session: UserSession,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(changeListingStatusSchema)) dto: ChangeListingStatusDto,
+  ) {
+    await this.commandBus.execute(
+      new ChangeListingStatusCommand({
+        id,
+        actorUserId: session.user.id,
+        status: dto.status,
+      }),
+    );
+    return { ok: true };
+  }
+
+  @Delete(':id')
+  @ApiOperation(API_OPERATIONS.DELETE_LISTING)
+  @ApiResponse(API_RESPONSES.DELETED('Listing'))
+  @ApiResponse(API_RESPONSES.UNAUTHORIZED('admin or agent'))
+  @ApiResponse(API_RESPONSES.NOT_FOUND('Listing'))
+  @ApiResponse(API_RESPONSES.VALIDATION_ERROR)
+  @ApiHeader(API_HEADERS.AUTHORIZATION)
+  async delete(@Session() session: UserSession, @Param('id') id: string) {
+    await this.commandBus.execute(new DeleteListingCommand({ id, actorUserId: session.user.id }));
     return { ok: true };
   }
 
@@ -126,11 +232,59 @@ export class ListingsController {
   @ApiResponse(API_RESPONSES.NOT_FOUND('Listing'))
   @ApiResponse(API_RESPONSES.VALIDATION_ERROR)
   @ApiHeader(API_HEADERS.AUTHORIZATION)
-  async delete(
+  async deleteLegacy(
     @Session() session: UserSession,
     @Body(new ZodValidationPipe(deleteListingSchema)) dto: DeleteListingDto,
   ) {
-    await this.commandBus.execute(new DeleteListingCommand({ ...dto, actorUserId: session.user.id }));
+    await this.commandBus.execute(
+      new DeleteListingCommand({ ...dto, actorUserId: session.user.id }),
+    );
     return { ok: true };
+  }
+
+  private async assertAdmin(actorUserId: string) {
+    const actor = await this.agencyRepo.findUserById(actorUserId);
+    if (!actor || !isPlatformAdmin({ id: actor.id, platformRole: actor.platformRole })) {
+      throw new ForbiddenException('Admin access is required');
+    }
+  }
+
+  private async assertCanManageListing(
+    actorUserId: string,
+    listing: {
+      ownerId: string;
+      createdByUserId?: string;
+      agencyId?: string | null;
+    },
+  ) {
+    const actor = await this.agencyRepo.findUserById(actorUserId);
+    if (!actor) {
+      throw new ForbiddenException('User not found');
+    }
+
+    if (isPlatformAdmin({ id: actor.id, platformRole: actor.platformRole })) {
+      return;
+    }
+
+    if (
+      listing.ownerId === actorUserId ||
+      (listing.createdByUserId && listing.createdByUserId === actorUserId)
+    ) {
+      return;
+    }
+
+    if (listing.agencyId) {
+      const membership = await this.agencyRepo.getMembership(listing.agencyId, actorUserId);
+      if (
+        canPostForAgency(
+          { id: actor.id, platformRole: actor.platformRole },
+          membership ?? undefined,
+        )
+      ) {
+        return;
+      }
+    }
+
+    throw new ForbiddenException('You are not allowed to access this listing');
   }
 }

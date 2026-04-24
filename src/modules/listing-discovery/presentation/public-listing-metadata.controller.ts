@@ -6,10 +6,7 @@ import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
 import { DI } from '@app/di.tokens';
 import { amenities, propertySubtypes } from '@infra/db/drizzle/schema';
-import {
-  API_OPERATIONS,
-  API_RESPONSES,
-} from '@shared/constants/api.constants';
+import { API_OPERATIONS, API_RESPONSES } from '@shared/constants/api.constants';
 import { ZodValidationPipe } from '@shared/pipes/zod-validation.pipe';
 import {
   listPublicPropertySubtypesQuerySchema,
@@ -37,7 +34,12 @@ export class PublicListingMetadataController {
         name: propertySubtypes.name,
       })
       .from(propertySubtypes)
-      .where(and(eq(propertySubtypes.isActive, true), dto.category ? eq(propertySubtypes.category, dto.category) : undefined))
+      .where(
+        and(
+          eq(propertySubtypes.isActive, true),
+          dto.category ? eq(propertySubtypes.category, dto.category) : undefined,
+        ),
+      )
       .orderBy(asc(propertySubtypes.name));
 
     return {
