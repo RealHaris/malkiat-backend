@@ -62,3 +62,4 @@ package-lock.json
 opencode.json
 typesense-data/
 dump.rdb
+.vercel

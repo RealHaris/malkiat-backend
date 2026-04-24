@@ -20,7 +20,9 @@ export class PublicAreasController {
   @Get()
   @ApiOperation(API_OPERATIONS.GET_PUBLIC_AREAS)
   @ApiResponse(API_RESPONSES.RETRIEVED('Areas'))
-  async list(@Query(new ZodValidationPipe(listPublicAreasQuerySchema)) dto: ListPublicAreasQueryDto) {
+  async list(
+    @Query(new ZodValidationPipe(listPublicAreasQuerySchema)) dto: ListPublicAreasQueryDto,
+  ) {
     const queryText = dto.q?.trim();
     const whereExpr = and(
       eq(areas.city, dto.city),

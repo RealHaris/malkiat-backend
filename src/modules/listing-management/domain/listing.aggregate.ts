@@ -1,5 +1,19 @@
 import type { ListingStatus } from './listing-status';
 
+type ListingCondition = 'BRAND_NEW' | 'EXCELLENT' | 'GOOD' | 'NEED_MINOR_WORK' | 'NEED_MAJOR_WORK';
+type ListingWeekday =
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
+
+type ListingAvailability = {
+  days: ListingWeekday[];
+};
+
 export type ListingProps = {
   id: string;
   createdByUserId?: string;
@@ -20,6 +34,8 @@ export type ListingProps = {
   areaSqft: string;
   priceAmount: string;
   currency: 'PKR';
+  condition?: ListingCondition | null;
+  availability?: ListingAvailability | null;
   installmentAvailable: boolean;
   readyForPossession: boolean;
   bedroomsCount?: number | null;
@@ -66,7 +82,9 @@ export class Listing {
     return listing;
   }
 
-  update(patch: Partial<Omit<ListingProps, 'id' | 'createdByUserId' | 'ownerId' | 'createdAt'>>): void {
+  update(
+    patch: Partial<Omit<ListingProps, 'id' | 'createdByUserId' | 'ownerId' | 'createdAt'>>,
+  ): void {
     const cleanPatch = Object.fromEntries(
       Object.entries(patch).filter(([, value]) => value !== undefined),
     ) as Partial<Omit<ListingProps, 'id' | 'createdByUserId' | 'ownerId' | 'createdAt'>>;

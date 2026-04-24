@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Malkiat Backend API",
-    "description": "Postman collection for Malkiat Backend - A real estate listing platform built with NestJS, CQRS, PostgreSQL, and Typesense",
+    "description": "Comprehensive Postman collection for Malkiat Backend - A real estate listing platform built with NestJS, CQRS, PostgreSQL, and Typesense",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -34,7 +34,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["sign-up", "email"]
             },
-            "description": "Create a new user account with email and password. Email verification is required."
+            "description": "Create a new user account with email and password."
           }
         },
         {
@@ -56,7 +56,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["sign-in", "email"]
             },
-            "description": "Sign in with email and password. Returns session cookies."
+            "description": "Sign in with email and password."
           }
         },
         {
@@ -68,8 +68,7 @@
               "raw": "{{baseUrl}}/sign-out",
               "host": ["{{baseUrl}}"],
               "path": ["sign-out"]
-            },
-            "description": "Sign out the current user and clear session."
+            }
           }
         },
         {
@@ -81,30 +80,7 @@
               "raw": "{{baseUrl}}/get-session",
               "host": ["{{baseUrl}}"],
               "path": ["get-session"]
-            },
-            "description": "Get current session information. Requires authentication."
-          }
-        },
-        {
-          "name": "Send Verification Email",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"user@example.com\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/send-verification-email",
-              "host": ["{{baseUrl}}"],
-              "path": ["send-verification-email"]
-            },
-            "description": "Request email verification email to be sent."
+            }
           }
         },
         {
@@ -113,18 +89,11 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/verify-email?token=YOUR_VERIFICATION_TOKEN",
+              "raw": "{{baseUrl}}/verify-email?token=TOKEN",
               "host": ["{{baseUrl}}"],
               "path": ["verify-email"],
-              "query": [
-                {
-                  "key": "token",
-                  "value": "YOUR_VERIFICATION_TOKEN",
-                  "description": "Verification token received in email"
-                }
-              ]
-            },
-            "description": "Verify user email address using token from email."
+              "query": [{ "key": "token", "value": "TOKEN" }]
+            }
           }
         },
         {
@@ -135,18 +104,13 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"user@example.com\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{baseUrl}}/forgot-password",
               "host": ["{{baseUrl}}"],
               "path": ["forgot-password"]
-            },
-            "description": "Request password reset email."
+            }
           }
         },
         {
@@ -156,68 +120,18 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"password\": \"NewSecurePassword456\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"password\": \"NewPassword123\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
-              "raw": "{{baseUrl}}/reset-password?token=YOUR_RESET_TOKEN",
+              "raw": "{{baseUrl}}/reset-password?token=TOKEN",
               "host": ["{{baseUrl}}"],
               "path": ["reset-password"],
-              "query": [
-                {
-                  "key": "token",
-                  "value": "YOUR_RESET_TOKEN",
-                  "description": "Reset token received in email"
-                }
-              ]
-            },
-            "description": "Reset password using token from email."
-          }
-        },
-        {
-          "name": "Sign In with Google",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/sign-in/social?provider=google",
-              "host": ["{{baseUrl}}"],
-              "path": ["sign-in", "social"],
-              "query": [
-                {
-                  "key": "provider",
-                  "value": "google"
-                }
-              ]
-            },
-            "description": "Initiate Google OAuth sign-in flow."
-          }
-        },
-        {
-          "name": "Sign In with Apple",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/sign-in/social?provider=apple",
-              "host": ["{{baseUrl}}"],
-              "path": ["sign-in", "social"],
-              "query": [
-                {
-                  "key": "provider",
-                  "value": "apple"
-                }
-              ]
-            },
-            "description": "Initiate Apple OAuth sign-in flow."
+              "query": [{ "key": "token", "value": "TOKEN" }]
+            }
           }
         }
-      ],
-      "description": "Authentication endpoints powered by Better Auth with email/password, OAuth, and email verification."
+      ]
     },
     {
       "name": "Users",
@@ -231,8 +145,65 @@
               "raw": "{{baseUrl}}/users/me",
               "host": ["{{baseUrl}}"],
               "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"phoneNumber\": \"+923001234567\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "description": "Get the currently authenticated user's profile. Requires authentication."
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Change My Password",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"SecurePassword123\",\n  \"newPassword\": \"NewSecurePassword456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "password"]
+            }
+          }
+        },
+        {
+          "name": "Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate My Profile",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "deactivate"]
+            }
           }
         },
         {
@@ -244,8 +215,7 @@
               "raw": "{{baseUrl}}/users/public",
               "host": ["{{baseUrl}}"],
               "path": ["users", "public"]
-            },
-            "description": "Public endpoint that doesn't require authentication. Returns success response."
+            }
           }
         },
         {
@@ -257,16 +227,579 @@
               "raw": "{{baseUrl}}/users/optional",
               "host": ["{{baseUrl}}"],
               "path": ["users", "optional"]
-            },
-            "description": "Endpoint that works with or without authentication. Returns authentication status."
+            }
           }
+        },
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "List Users",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/users/admin/list?page=1&perPage=10&q=&role=user&status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "admin", "list"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "perPage", "value": "10" },
+                    { "key": "q", "value": "" },
+                    { "key": "role", "value": "user" },
+                    { "key": "status", "value": "active" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Admin/User",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"AdminPass123!\",\n  \"platformRole\": \"admin\",\n  \"isActive\": true\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/admin",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "admin"]
+                }
+              }
+            },
+            {
+              "name": "Update User",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Name\",\n  \"platformRole\": \"admin\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/admin/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "admin", ":userId"],
+                  "variable": [{ "key": "userId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Update User Status",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"isActive\": false\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/admin/:userId/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "admin", ":userId", "status"],
+                  "variable": [{ "key": "userId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Update User Password",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"newPassword\": \"ResetPassword123!\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/admin/:userId/password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "admin", ":userId", "password"],
+                  "variable": [{ "key": "userId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Delete User",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/users/admin/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "admin", ":userId"],
+                  "variable": [{ "key": "userId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Bulk Delete Users",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userIds\": [\"id1\", \"id2\"]\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/admin/bulk-delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["users", "admin", "bulk-delete"]
+                }
+              }
+            }
+          ]
         }
-      ],
-      "description": "User profile and test endpoints."
+      ]
+    },
+    {
+      "name": "Agencies",
+      "item": [
+        {
+          "name": "Create Agency",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My New Agency\",\n  \"description\": \"Professional Real Estate Services\",\n  \"logoUrl\": \"https://example.com/logo.png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agencies",
+              "host": ["{{baseUrl}}"],
+              "path": ["agencies"]
+            }
+          }
+        },
+        {
+          "name": "List My Agencies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agencies/me/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["agencies", "me", "list"]
+            }
+          }
+        },
+        {
+          "name": "Get Agency Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agencies/:agencyId",
+              "host": ["{{baseUrl}}"],
+              "path": ["agencies", ":agencyId"],
+              "variable": [{ "key": "agencyId", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Update Agency",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agencies/:agencyId",
+              "host": ["{{baseUrl}}"],
+              "path": ["agencies", ":agencyId"],
+              "variable": [{ "key": "agencyId", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Archive Agency",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agencies/:agencyId/archive",
+              "host": ["{{baseUrl}}"],
+              "path": ["agencies", ":agencyId", "archive"],
+              "variable": [{ "key": "agencyId", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Follow Agency",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agencies/:agencyId/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["agencies", ":agencyId", "follow"],
+              "variable": [{ "key": "agencyId", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Unfollow Agency",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agencies/:agencyId/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["agencies", ":agencyId", "follow"],
+              "variable": [{ "key": "agencyId", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Members",
+          "item": [
+            {
+              "name": "List Agency Members",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/members",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "members"],
+                  "variable": [{ "key": "agencyId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Invite Members",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"members\": [\n    {\n      \"email\": \"agent@example.com\",\n      \"membershipRole\": \"agent\"\n    }\n  ]\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/members",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "members"],
+                  "variable": [{ "key": "agencyId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Update Member Role",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"membershipRole\": \"admin\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/members/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "members", ":userId"],
+                  "variable": [
+                    { "key": "agencyId", "value": "" },
+                    { "key": "userId", "value": "" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Remove Member",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/members/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "members", ":userId"],
+                  "variable": [
+                    { "key": "agencyId", "value": "" },
+                    { "key": "userId", "value": "" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Transfer Ownership",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"newOwnerId\": \"userId\",\n  \"demoteOldOwnerTo\": \"admin\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/transfer-ownership",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "transfer-ownership"],
+                  "variable": [{ "key": "agencyId", "value": "" }]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitations",
+          "item": [
+            {
+              "name": "Preview Invite",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/invitations/preview?token=TOKEN",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "invitations", "preview"],
+                  "query": [{ "key": "token", "value": "TOKEN" }]
+                }
+              }
+            },
+            {
+              "name": "List Agency Invites",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/invites",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "invites"],
+                  "variable": [{ "key": "agencyId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Accept Invite",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"agencyId\": \"agencyId\",\n  \"token\": \"TOKEN\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/invitations/accept",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "invitations", "accept"]
+                }
+              }
+            },
+            {
+              "name": "Reject Invite",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"agencyId\": \"agencyId\",\n  \"token\": \"TOKEN\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/invitations/reject",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "invitations", "reject"]
+                }
+              }
+            },
+            {
+              "name": "Resend Invite",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/invites/:inviteId/resend",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "invites", ":inviteId", "resend"],
+                  "variable": [
+                    { "key": "agencyId", "value": "" },
+                    { "key": "inviteId", "value": "" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Revoke Invite",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/invites/:inviteId/revoke",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "invites", ":inviteId", "revoke"],
+                  "variable": [
+                    { "key": "agencyId", "value": "" },
+                    { "key": "inviteId", "value": "" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete Invite",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/:agencyId/invites/:inviteId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", ":agencyId", "invites", ":inviteId"],
+                  "variable": [
+                    { "key": "agencyId", "value": "" },
+                    { "key": "inviteId", "value": "" }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Admin List Agencies",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/admin/list?page=1&perPage=20&q=&status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "admin", "list"],
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "perPage", "value": "20" },
+                    { "key": "q", "value": "" },
+                    { "key": "status", "value": "active" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Admin Get Agency",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/admin/:agencyId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "admin", ":agencyId"],
+                  "variable": [{ "key": "agencyId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Admin Create Agency",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Admin Created Agency\",\n  \"description\": \"System Managed\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/admin",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "admin"]
+                }
+              }
+            },
+            {
+              "name": "Admin Update Agency Status",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"inactive\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/admin/:agencyId/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "admin", ":agencyId", "status"],
+                  "variable": [{ "key": "agencyId", "value": "" }]
+                }
+              }
+            },
+            {
+              "name": "Admin Remove Member",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/agencies/admin/:agencyId/members/:userId",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["agencies", "admin", ":agencyId", "members", ":userId"],
+                  "variable": [
+                    { "key": "agencyId", "value": "" },
+                    { "key": "userId", "value": "" }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Listings (Management)",
       "item": [
+        {
+          "name": "Get My Listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/listings/me?page=1&perPage=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings", "me"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "perPage", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Admin Listings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/listings/admin?page=1&perPage=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings", "admin"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "perPage", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Listing by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/listings/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          }
+        },
         {
           "name": "Create Listing",
           "request": {
@@ -274,19 +807,14 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"ownerId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"title\": \"Luxury Apartment in Downtown\",\n  \"description\": \"Beautiful 3-bedroom apartment with city views, modern amenities, and close to public transportation.\",\n  \"priceAmount\": \"500000\",\n  \"currency\": \"PKR\",\n  \"propertyType\": \"apartment\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"title\": \"Luxury Apartment\",\n  \"description\": \"3-bedroom apartment\",\n  \"priceAmount\": \"500000\",\n  \"currency\": \"PKR\",\n  \"propertyType\": \"apartment\",\n  \"city\": \"Lahore\",\n  \"areaId\": \"area-uuid\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{baseUrl}}/listings",
               "host": ["{{baseUrl}}"],
               "path": ["listings"]
-            },
-            "description": "Create a new listing. Requires ADMIN or AGENT role. Publishes ListingCreated event to queue for Typesense indexing."
+            }
           }
         },
         {
@@ -296,19 +824,32 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"ownerId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"title\": \"Updated: Luxury Apartment in Downtown\",\n  \"priceAmount\": \"550000\",\n  \"status\": \"PUBLISHED\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"id\": \"listing-id\",\n  \"title\": \"Updated Title\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
             "url": {
               "raw": "{{baseUrl}}/listings",
               "host": ["{{baseUrl}}"],
               "path": ["listings"]
+            }
+          }
+        },
+        {
+          "name": "Update Listing Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PUBLISHED\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "description": "Update an existing listing. Requires ADMIN or AGENT role. All fields are optional. Publishes ListingUpdated event for Typesense re-indexing."
+            "url": {
+              "raw": "{{baseUrl}}/listings/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings", ":id", "status"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
           }
         },
         {
@@ -316,28 +857,18 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"ownerId\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "{{baseUrl}}/listings",
+              "raw": "{{baseUrl}}/listings/:id",
               "host": ["{{baseUrl}}"],
-              "path": ["listings"]
-            },
-            "description": "Delete a listing. Requires ADMIN or AGENT role. Publishes ListingDeleted event to remove from Typesense index."
+              "path": ["listings", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
           }
         }
-      ],
-      "description": "Listing management endpoints for CRUD operations. Protected - requires ADMIN or AGENT role."
+      ]
     },
     {
-      "name": "Public Listings (Discovery)",
+      "name": "Public Discovery",
       "item": [
         {
           "name": "Discover Listings",
@@ -345,40 +876,16 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/public/listings/discovery?page=1&perPage=20&sort=newest&propertyType=apartment&currency=PKR",
+              "raw": "{{baseUrl}}/public/listings/discovery?page=1&perPage=20&sort=newest&city=Lahore",
               "host": ["{{baseUrl}}"],
               "path": ["public", "listings", "discovery"],
               "query": [
-                {
-                  "key": "page",
-                  "value": "1",
-                  "description": "Page number (default: 1)"
-                },
-                {
-                  "key": "perPage",
-                  "value": "20",
-                  "description": "Items per page (default: 20)"
-                },
-                {
-                  "key": "sort",
-                  "value": "newest",
-                  "description": "Sort order: newest, price_asc, price_desc (default: newest)"
-                },
-                {
-                  "key": "propertyType",
-                  "value": "apartment",
-                  "description": "Filter by property type",
-                  "disabled": true
-                },
-                {
-                  "key": "currency",
-                  "value": "PKR",
-                  "description": "Filter by currency",
-                  "disabled": true
-                }
+                { "key": "page", "value": "1" },
+                { "key": "perPage", "value": "20" },
+                { "key": "sort", "value": "newest" },
+                { "key": "city", "value": "Lahore" }
               ]
-            },
-            "description": "Browse listings with optional filters. Only returns PUBLISHED listings. Uses Typesense for fast discovery."
+            }
           }
         },
         {
@@ -387,61 +894,104 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/public/listings/search?q=luxury%20apartment&page=1&perPage=20&sort=relevance&minPrice=100000&maxPrice=1000000&propertyType=apartment&currency=PKR",
+              "raw": "{{baseUrl}}/public/listings/search?q=luxury&city=Lahore&page=1&perPage=20",
               "host": ["{{baseUrl}}"],
               "path": ["public", "listings", "search"],
               "query": [
-                {
-                  "key": "q",
-                  "value": "luxury apartment",
-                  "description": "Search query - searches title and description with vector embeddings"
-                },
-                {
-                  "key": "page",
-                  "value": "1",
-                  "description": "Page number (default: 1)"
-                },
-                {
-                  "key": "perPage",
-                  "value": "20",
-                  "description": "Items per page (default: 20)"
-                },
-                {
-                  "key": "sort",
-                  "value": "relevance",
-                  "description": "Sort order: relevance, newest, price_asc, price_desc (default: relevance)"
-                },
-                {
-                  "key": "minPrice",
-                  "value": "100000",
-                  "description": "Minimum price filter",
-                  "disabled": true
-                },
-                {
-                  "key": "maxPrice",
-                  "value": "1000000",
-                  "description": "Maximum price filter",
-                  "disabled": true
-                },
-                {
-                  "key": "propertyType",
-                  "value": "apartment",
-                  "description": "Filter by property type",
-                  "disabled": true
-                },
-                {
-                  "key": "currency",
-                  "value": "PKR",
-                  "description": "Filter by currency",
-                  "disabled": true
-                }
+                { "key": "q", "value": "luxury" },
+                { "key": "city", "value": "Lahore" },
+                { "key": "page", "value": "1" },
+                { "key": "perPage", "value": "20" }
               ]
-            },
-            "description": "Full-text search with vector embeddings for semantic search. Only returns PUBLISHED listings. Supports price range and property type filters."
+            }
+          }
+        },
+        {
+          "name": "List Public Areas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/areas?city=Lahore&q=&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "areas"],
+              "query": [
+                { "key": "city", "value": "Lahore" },
+                { "key": "q", "value": "" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Property Subtypes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/listing-metadata/property-subtypes?category=residential",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "listing-metadata", "property-subtypes"],
+              "query": [{ "key": "category", "value": "residential" }]
+            }
+          }
+        },
+        {
+          "name": "Amenities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/listing-metadata/amenities",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "listing-metadata", "amenities"]
+            }
           }
         }
-      ],
-      "description": "Public listing discovery and search endpoints. No authentication required. Uses Typesense with vector embeddings for intelligent search."
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload Listing Images",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "type", "value": "listing", "type": "text" },
+                { "key": "files", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/uploads",
+              "host": ["{{baseUrl}}"],
+              "path": ["uploads"]
+            }
+          }
+        },
+        {
+          "name": "Upload Profile Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "type", "value": "user_avatar", "type": "text" },
+                { "key": "file", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/uploads",
+              "host": ["{{baseUrl}}"],
+              "path": ["uploads"]
+            }
+          }
+        }
+      ]
     }
   ]
 }

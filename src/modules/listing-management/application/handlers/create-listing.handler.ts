@@ -13,6 +13,16 @@ import { areas, propertySubtypes, toSqft } from '@infra/db/drizzle/schema';
 import { DrizzleAgencyRepository } from '@modules/identity-access/agencies/infrastructure/drizzle-agency.repository';
 import { canPostForAgency } from '@modules/identity-access/agencies/presentation/agency-authz';
 
+const ALL_WEEKDAYS = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+] as const;
+
 @CommandHandler(CreateListingCommand)
 export class CreateListingHandler implements ICommandHandler<CreateListingCommand> {
   constructor(
@@ -40,7 +50,13 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
       }
       const actor = await this.agencyRepo.findUserById(actorUserId);
       const membership = await this.agencyRepo.getMembership(command.payload.agencyId, actorUserId);
-      if (!actor || !canPostForAgency({ id: actor.id, platformRole: actor.platformRole }, membership ?? undefined)) {
+      if (
+        !actor ||
+        !canPostForAgency(
+          { id: actor.id, platformRole: actor.platformRole },
+          membership ?? undefined,
+        )
+      ) {
         throw new BadRequestException('You cannot create listings for this agency');
       }
       if (agency.status !== 'active') {
@@ -74,6 +90,12 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
 
     const listingId = command.payload.id ?? randomUUID();
     const status = command.payload.action === 'submit' ? 'UNDER_REVIEW' : 'DRAFT';
+    const availability =
+      command.payload.availability &&
+      command.payload.availability.days.length === ALL_WEEKDAYS.length &&
+      ALL_WEEKDAYS.every((day) => command.payload.availability?.days.includes(day))
+        ? null
+        : (command.payload.availability ?? null);
     const listing = Listing.create({
       id: listingId,
       createdByUserId: actorUserId,
@@ -94,6 +116,8 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
       areaSqft: toSqft(command.payload.areaValue, command.payload.areaUnit).toString(),
       priceAmount: command.payload.priceAmount.toString(),
       currency: command.payload.currency ?? 'PKR',
+      condition: command.payload.condition ?? null,
+      availability,
       installmentAvailable: command.payload.installmentAvailable ?? false,
       readyForPossession: command.payload.readyForPossession ?? false,
       bedroomsCount: command.payload.bedroomsCount ?? null,

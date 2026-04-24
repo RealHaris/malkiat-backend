@@ -45,23 +45,43 @@ export const ListingEventsWorkerProvider: Provider = {
             return { ok: true, skipped: true };
           }
 
-          await indexer.upsert({
-            id: String(row.id),
-            title: String(row.title),
-            description: row.description ?? null,
-            status: String(row.status ?? 'DRAFT'),
-            propertyCategory: row.propertyCategory ?? null,
-            propertySubtypeId: row.propertySubtypeId ? String(row.propertySubtypeId) : null,
-            city: row.city ? String(row.city) : null,
-            areaId: row.areaId ? String(row.areaId) : null,
-            locationText: row.locationText ? String(row.locationText) : null,
-            areaSqft: Number(row.areaSqft ?? 0),
-            currency: String(row.currency ?? 'PKR'),
-            priceAmount: Number(row.priceAmount ?? 0),
-            createdAt: Math.floor(new Date(row.createdAt ?? new Date()).getTime() / 1000),
-          });
+          const currentStatus = String(row.status ?? 'DRAFT');
 
-          return { ok: true };
+          if (currentStatus === 'DELETED') {
+            await indexer.deleteById(String(row.id));
+            return { ok: true };
+          }
+
+          if (currentStatus === 'PUBLISHED') {
+            await indexer.upsert({
+              id: String(row.id),
+              title: String(row.title),
+              description: row.description ?? null,
+              purpose: String(row.purpose),
+              status: currentStatus,
+              condition: row.condition ?? null,
+              bedroomsCount: row.bedroomsCount ? Number(row.bedroomsCount) : null,
+              availabilityDays: Array.isArray(row.availability?.days)
+                ? row.availability.days.map((d: any) => String(d))
+                : undefined,
+              propertyCategory: row.propertyCategory ?? null,
+              propertySubtypeId: row.propertySubtypeId ? String(row.propertySubtypeId) : null,
+              city: row.city ? String(row.city) : null,
+              areaId: row.areaId ? String(row.areaId) : null,
+              locationText: row.locationText ? String(row.locationText) : null,
+              areaSqft: Number(row.areaSqft ?? 0),
+              currency: String(row.currency ?? 'PKR'),
+              priceAmount: Number(row.priceAmount ?? 0),
+              createdAt: Math.floor(new Date(row.createdAt ?? new Date()).getTime() / 1000),
+            });
+
+            return { ok: true };
+          }
+
+          // If the status is not PUBLISHED (e.g. DRAFT, ARCHIVED),
+          // ensure it is removed from Typesense so it does not appear in search.
+          await indexer.deleteById(String(row.id));
+          return { ok: true, skipped: true, reason: `Status is ${currentStatus}, not PUBLISHED` };
         }
 
         return { ok: true, ignored: true };

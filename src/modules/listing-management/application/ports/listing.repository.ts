@@ -1,4 +1,5 @@
 import type { Listing } from '@modules/listing-management/domain/listing.aggregate';
+import type { ListingStatus } from '@modules/listing-management/domain/listing-status';
 
 export interface ListingRepository {
   create(listing: Listing): Promise<void>;
@@ -9,7 +10,13 @@ export interface ListingRepository {
     page: number;
     perPage: number;
     q?: string;
-    statuses?: Array<'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED'>;
+    statuses?: ListingStatus[];
+  }): Promise<{ items: Listing[]; total: number }>;
+  listAll(input: {
+    page: number;
+    perPage: number;
+    q?: string;
+    statuses?: ListingStatus[];
   }): Promise<{ items: Listing[]; total: number }>;
   listPublic(input: {
     city: string;

@@ -1,3 +1,5 @@
+import type { ListingStatus } from '@modules/listing-management/domain/listing-status';
+
 export class UpdateListingCommand {
   constructor(
     public readonly payload: {
@@ -20,6 +22,12 @@ export class UpdateListingCommand {
       areaSqft?: number;
       priceAmount?: number;
       currency?: 'PKR';
+      condition?: 'BRAND_NEW' | 'EXCELLENT' | 'GOOD' | 'NEED_MINOR_WORK' | 'NEED_MAJOR_WORK' | null;
+      availability?: {
+        days: Array<
+          'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
+        >;
+      } | null;
       installmentAvailable?: boolean;
       readyForPossession?: boolean;
       bedroomsCount?: number;
@@ -28,7 +36,7 @@ export class UpdateListingCommand {
       imagesJson?: string[];
       videoUrl?: string | null;
       platforms?: string[];
-      status?: 'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED';
+      status?: ListingStatus;
       publishedAt?: Date | null;
     },
   ) {}

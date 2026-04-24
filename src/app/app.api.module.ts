@@ -5,6 +5,7 @@ import { AppLoggerModule } from '@shared/logger/logger.module';
 import { IdentityAccessModule } from '@modules/identity-access/identity-access.module';
 import { ListingManagementModule } from '@modules/listing-management/listing-management.module';
 import { ListingDiscoveryModule } from '@modules/listing-discovery/listing-discovery.module';
+import { UploadsModule } from '@modules/uploads/uploads.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ListingDiscoveryModule } from '@modules/listing-discovery/listing-disco
     IdentityAccessModule,
     ListingManagementModule,
     ListingDiscoveryModule,
+    UploadsModule,
   ],
   controllers: [],
   providers: [],

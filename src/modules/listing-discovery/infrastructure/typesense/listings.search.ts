@@ -13,13 +13,20 @@ type DiscoverParams = {
 
 type SearchParams = {
   collection: string;
-  q: string;
+  q?: string;
   page: number;
   perPage: number;
   sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';
   city: string;
+  areaIds?: string[];
+  purpose?: string;
+  propertyCategory?: string;
+  propertySubtypeId?: string;
   minPrice?: number;
   maxPrice?: number;
+  minAreaSqft?: number;
+  maxAreaSqft?: number;
+  bedroomsCount?: number;
 };
 
 function toListingCard(doc: any): ListingCard {
@@ -39,6 +46,10 @@ function toListingCard(doc: any): ListingCard {
     areaSqft: Number(doc.areaSqft ?? 0),
     priceAmount: Number(doc.priceAmount ?? 0),
     currency: String(doc.currency ?? 'PKR') as any,
+    condition: (doc.condition ?? null) as any,
+    availability: Array.isArray(doc.availabilityDays)
+      ? ({ days: doc.availabilityDays.map((d: any) => String(d)) } as any)
+      : null,
     installmentAvailable: Boolean(doc.installmentAvailable ?? false),
     readyForPossession: Boolean(doc.readyForPossession ?? false),
     bedroomsCount: doc.bedroomsCount ?? null,
@@ -54,13 +65,37 @@ function toListingCard(doc: any): ListingCard {
 
 function buildFilterBy(input: {
   city: string;
+  areaIds?: string[];
+  purpose?: string;
+  propertyCategory?: string;
+  propertySubtypeId?: string;
   minPrice?: number;
   maxPrice?: number;
+  minAreaSqft?: number;
+  maxAreaSqft?: number;
+  bedroomsCount?: number;
 }): string {
   const clauses: string[] = ['status:=PUBLISHED', `city:=${escapeFilterValue(input.city)}`];
 
+  if (input.areaIds && input.areaIds.length > 0) {
+    const escapedAreaIds = input.areaIds.map(escapeFilterValue);
+    clauses.push(`areaId:=[${escapedAreaIds.join(',')}]`);
+  }
+
+  if (input.purpose) clauses.push(`purpose:=${escapeFilterValue(input.purpose)}`);
+  if (input.propertyCategory)
+    clauses.push(`propertyCategory:=${escapeFilterValue(input.propertyCategory)}`);
+  if (input.propertySubtypeId)
+    clauses.push(`propertySubtypeId:=${escapeFilterValue(input.propertySubtypeId)}`);
+
   if (typeof input.minPrice === 'number') clauses.push(`priceAmount:>=${input.minPrice}`);
   if (typeof input.maxPrice === 'number') clauses.push(`priceAmount:<=${input.maxPrice}`);
+
+  if (typeof input.minAreaSqft === 'number') clauses.push(`areaSqft:>=${input.minAreaSqft}`);
+  if (typeof input.maxAreaSqft === 'number') clauses.push(`areaSqft:<=${input.maxAreaSqft}`);
+
+  if (typeof input.bedroomsCount === 'number')
+    clauses.push(`bedroomsCount:=${input.bedroomsCount}`);
 
   return clauses.join(' && ');
 }
@@ -118,12 +153,19 @@ export class TypesenseListingsSearch {
       .collections(input.collection)
       .documents()
       .search({
-        q: input.q,
+        q: input.q || '*',
         query_by: 'title,description,embedding',
         filter_by: buildFilterBy({
           city: input.city,
+          areaIds: input.areaIds,
+          purpose: input.purpose,
+          propertyCategory: input.propertyCategory,
+          propertySubtypeId: input.propertySubtypeId,
           minPrice: input.minPrice,
           maxPrice: input.maxPrice,
+          minAreaSqft: input.minAreaSqft,
+          maxAreaSqft: input.maxAreaSqft,
+          bedroomsCount: input.bedroomsCount,
         }),
         // Hybrid: Typesense generates query embeddings because the collection schema has `embed` config.
         vector_query: 'embedding:([], k:200)',

@@ -1,9 +1,15 @@
 export class SearchListingsQuery {
   constructor(
     public readonly input: {
-      q: string;
+      q?: string;
       city: string;
-      areaId?: string;
+      areaIds?: string[];
+      purpose?: 'SELL' | 'RENT';
+      propertyCategory?: 'HOME' | 'PLOT' | 'COMMERCIAL';
+      propertySubtypeId?: string;
+      minAreaSqft?: number;
+      maxAreaSqft?: number;
+      bedroomsCount?: number;
       page?: number;
       perPage?: number;
       sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';

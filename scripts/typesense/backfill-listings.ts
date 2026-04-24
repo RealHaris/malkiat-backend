@@ -45,8 +45,17 @@ async function main() {
         id,
         title,
         description,
+        purpose,
         status,
-        property_type as "propertyType",
+        condition,
+        bedrooms_count as "bedroomsCount",
+        availability,
+        property_category as "propertyCategory",
+        property_subtype_id as "propertySubtypeId",
+        city,
+        area_id as "areaId",
+        location_text as "locationText",
+        area_sqft as "areaSqft",
         currency,
         price_amount as "priceAmount",
         created_at as "createdAt"
@@ -63,8 +72,22 @@ async function main() {
           id: String(r.id),
           title: String(r.title ?? ''),
           description: r.description ?? undefined,
+          purpose: String(r.purpose),
           status: String(r.status ?? 'DRAFT'),
-          propertyType: r.propertyType ?? undefined,
+          condition: r.condition ?? undefined,
+          bedroomsCount: r.bedroomsCount ? Number(r.bedroomsCount) : undefined,
+          availabilityDays: Array.isArray(r.availability?.days)
+            ? r.availability.days.map((d) => String(d))
+            : undefined,
+          propertyCategory: r.propertyCategory ?? undefined,
+          propertySubtypeId: r.propertySubtypeId ? String(r.propertySubtypeId) : undefined,
+          city: r.city ?? undefined,
+          areaId: r.areaId ? String(r.areaId) : undefined,
+          locationText: r.locationText ?? undefined,
+          areaSqft:
+            typeof r.areaSqft === 'undefined' || r.areaSqft === null
+              ? undefined
+              : Number(r.areaSqft),
           currency: String(r.currency ?? 'PKR'),
           priceAmount: Number(r.priceAmount ?? 0),
           createdAt: toUnixSeconds(r.createdAt ?? new Date()),
