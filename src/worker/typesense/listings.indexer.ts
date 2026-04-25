@@ -2,21 +2,32 @@ import type { Client } from 'typesense';
 
 export type ListingIndexDocument = {
   id: string;
+  ownerId: string;
   title: string;
   description?: string | null;
   purpose: string;
   status: string;
   condition?: string | null;
   bedroomsCount?: number | null;
+  bathroomsCount?: number | null;
   availabilityDays?: string[];
   propertyCategory?: string | null;
   propertySubtypeId?: string | null;
   city?: string | null;
   areaId?: string | null;
   locationText?: string | null;
+  googleMapsUrl?: string | null;
+  areaValue: number;
+  areaUnit: string;
   areaSqft?: number;
-  currency: string;
   priceAmount: number;
+  currency: string;
+  installmentAvailable: boolean;
+  readyForPossession: boolean;
+  imagesJson: string[];
+  videoUrl?: string | null;
+  platforms: string[];
+  publishedAt?: number | null;
   createdAt: number;
 };
 
@@ -42,6 +53,7 @@ export class ListingsIndexer {
         city: doc.city ?? undefined,
         areaId: doc.areaId ?? undefined,
         locationText: doc.locationText ?? undefined,
+        googleMapsUrl: doc.googleMapsUrl ?? undefined,
       } as any);
   }
 

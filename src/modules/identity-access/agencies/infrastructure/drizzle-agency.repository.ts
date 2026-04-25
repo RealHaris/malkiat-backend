@@ -117,6 +117,11 @@ export class DrizzleAgencyRepository {
     return rows[0] ?? null;
   }
 
+  async getAgencyBySlug(slug: string) {
+    const rows = await this.db.select().from(agencies).where(eq(agencies.slug, slug)).limit(1);
+    return rows[0] ?? null;
+  }
+
   async getMembership(agencyId: string, userId: string) {
     const rows = await this.db
       .select()
@@ -159,6 +164,11 @@ export class DrizzleAgencyRepository {
         createdAt: agencies.createdAt,
         updatedAt: agencies.updatedAt,
         membershipRole: agencyMemberships.membershipRole,
+        joinedAt: agencyMemberships.joinedAt,
+        listingCount:
+          sql<number>`COALESCE((SELECT COUNT(*) FROM ${listings} l WHERE l.agency_id = ${agencies.id} AND l.status::text != 'DELETED'), 0)::int`.as(
+            'listing_count',
+          ),
       })
       .from(agencyMemberships)
       .innerJoin(agencies, eq(agencies.id, agencyMemberships.agencyId))
@@ -295,7 +305,7 @@ export class DrizzleAgencyRepository {
             'member_count',
           ),
         listingCount:
-          sql<number>`COALESCE((SELECT COUNT(*) FROM ${listings} l WHERE l.agency_id = ${agencies.id} AND l.status != 'DELETED'), 0)::int`.as(
+          sql<number>`COALESCE((SELECT COUNT(*) FROM ${listings} l WHERE l.agency_id = ${agencies.id} AND l.status::text != 'DELETED'), 0)::int`.as(
             'listing_count',
           ),
       })
@@ -353,10 +363,11 @@ export class DrizzleAgencyRepository {
       .select({
         total: sql<number>`count(*)::int`,
         draft: sql<number>`count(*) filter (where ${listings.status} = 'DRAFT')::int`,
-        underReview: sql<number>`count(*) filter (where ${listings.status} = 'UNDER_REVIEW')::int`,
+        underReview:
+          sql<number>`count(*) filter (where ${listings.status}::text = 'UNDER_REVIEW')::int`,
         published: sql<number>`count(*) filter (where ${listings.status} = 'PUBLISHED')::int`,
-        unpublished: sql<number>`count(*) filter (where ${listings.status} = 'UNPUBLISHED')::int`,
-        deleted: sql<number>`count(*) filter (where ${listings.status} = 'DELETED')::int`,
+        unpublished: sql<number>`count(*) filter (where ${listings.status}::text = 'UNPUBLISHED')::int`,
+        deleted: sql<number>`count(*) filter (where ${listings.status}::text = 'DELETED')::int`,
       })
       .from(listings)
       .where(eq(listings.agencyId, agencyId));

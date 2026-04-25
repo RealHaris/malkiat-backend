@@ -9,6 +9,7 @@ export type ListingCard = {
   city: string;
   areaId: string;
   locationText: string;
+  googleMapsUrl?: string | null;
   areaValue: number;
   areaUnit: 'MARLA' | 'SQFT' | 'SQYD' | 'KANAL';
   areaSqft: number;

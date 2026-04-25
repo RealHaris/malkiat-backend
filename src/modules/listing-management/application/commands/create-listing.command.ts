@@ -14,6 +14,7 @@ export class CreateListingCommand {
       city: string;
       areaId: string;
       locationText: string;
+      googleMapsUrl?: string;
       latitude?: number;
       longitude?: number;
       areaValue: number;

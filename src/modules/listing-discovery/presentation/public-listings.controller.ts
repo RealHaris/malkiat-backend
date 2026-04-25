@@ -6,6 +6,7 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { DI } from '@app/di.tokens';
 import { SearchListingsQuery } from '@modules/listing-discovery/application/queries/search-listings.query';
+import { DiscoverListingsQuery } from '@modules/listing-discovery/application/queries/discover-listings.query';
 import { API_OPERATIONS, API_RESPONSES } from '@shared/constants/api.constants';
 import { ZodValidationPipe } from '@shared/pipes/zod-validation.pipe';
 import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
@@ -31,18 +32,20 @@ export class PublicListingsController {
     @Query(new ZodValidationPipe(discoverListingsQuerySchema))
     dto: DiscoverListingsQueryDto,
   ) {
-    const result = await this.listingRepo.listPublic({
-      city: dto.city,
-      page: dto.page,
-      perPage: dto.perPage,
-      sort: dto.sort,
-    });
+    const result = await this.queryBus.execute(
+      new DiscoverListingsQuery({
+        city: dto.city,
+        page: dto.page,
+        perPage: dto.perPage,
+        sort: dto.sort,
+      }),
+    );
 
     return {
-      items: result.items.map((x) => x.snapshot),
-      page: dto.page,
-      perPage: dto.perPage,
-      total: result.total,
+      items: result.items,
+      page: result.page,
+      perPage: result.perPage,
+      total: result.found,
     };
   }
 
@@ -53,18 +56,20 @@ export class PublicListingsController {
     @Query(new ZodValidationPipe(discoverListingsQuerySchema))
     dto: DiscoverListingsQueryDto,
   ) {
-    const result = await this.listingRepo.listPublic({
-      city: dto.city,
-      page: dto.page,
-      perPage: dto.perPage,
-      sort: dto.sort,
-    });
+    const result = await this.queryBus.execute(
+      new DiscoverListingsQuery({
+        city: dto.city,
+        page: dto.page,
+        perPage: dto.perPage,
+        sort: dto.sort,
+      }),
+    );
 
     return {
-      items: result.items.map((x) => x.snapshot),
-      page: dto.page,
-      perPage: dto.perPage,
-      total: result.total,
+      items: result.items,
+      page: result.page,
+      perPage: result.perPage,
+      total: result.found,
     };
   }
 

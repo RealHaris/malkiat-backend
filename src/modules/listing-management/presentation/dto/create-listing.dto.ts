@@ -33,6 +33,7 @@ const createListingSchema = z.object({
     .string({ required_error: VALIDATION_MESSAGES.REQUIRED('Location') })
     .min(3, VALIDATION_MESSAGES.MIN_LENGTH('Location', 3))
     .max(500, VALIDATION_MESSAGES.MAX_LENGTH('Location', 500)),
+  googleMapsUrl: z.string().url().optional(),
   areaValue: z
     .number({ required_error: VALIDATION_MESSAGES.REQUIRED('Area value') })
     .positive(VALIDATION_MESSAGES.POSITIVE_NUMBER('Area value')),
@@ -68,8 +69,8 @@ const createListingSchema = z.object({
   imagesJson: z.array(z.string().url()).max(5).optional().default([]),
   videoUrl: z.string().url().optional(),
   platforms: z.array(z.string()).optional().default(['ZAMEEN']),
-  latitude: z.number().min(-90).max(90).optional(),
-  longitude: z.number().min(-180).max(180).optional(),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
 });
 
 export type CreateListingDto = z.infer<typeof createListingSchema>;

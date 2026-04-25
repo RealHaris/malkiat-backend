@@ -38,6 +38,7 @@ const updateListingSchema = z.object({
     .min(3, VALIDATION_MESSAGES.MIN_LENGTH('Location', 3))
     .max(500)
     .optional(),
+  googleMapsUrl: z.string().url().nullable().optional(),
   agencyId: z.string().uuid().nullable().optional(),
   areaValue: z.number().positive(VALIDATION_MESSAGES.POSITIVE_NUMBER('Area value')).optional(),
   areaUnit: z.enum(AREA_UNITS).optional(),

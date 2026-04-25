@@ -41,6 +41,7 @@ function toListingCard(doc: any): ListingCard {
     city: String(doc.city ?? 'Karachi'),
     areaId: String(doc.areaId ?? ''),
     locationText: String(doc.locationText ?? ''),
+    googleMapsUrl: doc.googleMapsUrl ?? null,
     areaValue: Number(doc.areaValue ?? 0),
     areaUnit: String(doc.areaUnit ?? 'MARLA') as any,
     areaSqft: Number(doc.areaSqft ?? 0),

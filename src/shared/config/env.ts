@@ -36,6 +36,9 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   APPLE_CLIENT_ID: z.string().optional(),
   APPLE_CLIENT_SECRET: z.string().optional(),
+
+  BULLMQ_DASHBOARD_USER: z.string().default('admin'),
+  BULLMQ_DASHBOARD_PASSWORD: z.string().default('admin'),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
