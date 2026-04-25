@@ -125,6 +125,7 @@ export const listings = pgTable('listings', {
     .notNull()
     .references(() => areas.id, { onDelete: 'restrict' }),
   locationText: text('location_text').notNull(),
+  googleMapsUrl: text('google_maps_url'),
   latitude: numeric('latitude', { precision: 10, scale: 7 }),
   longitude: numeric('longitude', { precision: 10, scale: 7 }),
   areaValue: numeric('area_value', { precision: 14, scale: 2 }).notNull(),

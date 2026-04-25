@@ -195,6 +195,53 @@ export class AgenciesController {
     return { agency, followers };
   }
 
+  @Get('by-slug/:slug')
+  async getAgencyBySlug(@Session() session: UserSession, @Param('slug') slug: string) {
+    const agency = await this.agencyRepo.getAgencyBySlug(slug);
+    if (!agency) throw new NotFoundException('Agency not found');
+
+    const actor = await this.agencyRepo.findUserById(session.user.id);
+    if (!actor) throw new ForbiddenException('User not found');
+
+    const membership = await this.agencyRepo.getMembership(agency.id, session.user.id);
+
+    // Enforce access: admin or active agency member only
+    if (actor.platformRole !== 'admin' && (!membership || membership.status !== 'active')) {
+      throw new ForbiddenException('You do not have access to this agency profile');
+    }
+
+    const [stats, members] = await Promise.all([
+      this.agencyRepo.adminGetAgencyStats(agency.id),
+      this.agencyRepo.listMembers(agency.id),
+    ]);
+
+    const canEditAgency =
+      actor.platformRole === 'admin' ||
+      membership?.membershipRole === 'owner' ||
+      membership?.membershipRole === 'co-owner' ||
+      membership?.membershipRole === 'admin';
+
+    const canManageMembers =
+      actor.platformRole === 'admin' ||
+      membership?.membershipRole === 'owner' ||
+      membership?.membershipRole === 'co-owner' ||
+      membership?.membershipRole === 'admin';
+
+    return {
+      agency,
+      stats: {
+        memberCount: stats.members.total,
+        listingCount: stats.listings.total,
+        activeListingCount: stats.listings.published,
+      },
+      members,
+      capabilities: {
+        canEditAgency,
+        canManageMembers,
+      },
+    };
+  }
+
   @Patch(':agencyId')
   async updateAgency(
     @Session() session: UserSession,

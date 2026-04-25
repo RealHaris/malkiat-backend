@@ -6,6 +6,7 @@ import { IdentityAccessModule } from '@modules/identity-access/identity-access.m
 import { ListingManagementModule } from '@modules/listing-management/listing-management.module';
 import { ListingDiscoveryModule } from '@modules/listing-discovery/listing-discovery.module';
 import { UploadsModule } from '@modules/uploads/uploads.module';
+import { BullmqDashboardModule } from '@modules/admin/bullmq-dashboard/bullmq-dashboard.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UploadsModule } from '@modules/uploads/uploads.module';
     ListingManagementModule,
     ListingDiscoveryModule,
     UploadsModule,
+    BullmqDashboardModule,
   ],
   controllers: [],
   providers: [],

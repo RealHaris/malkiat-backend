@@ -28,6 +28,7 @@ export class DrizzleListingRepository implements ListingRepository {
       city: String(row.city),
       areaId: String(row.areaId),
       locationText: String(row.locationText),
+      googleMapsUrl: row.googleMapsUrl ?? null,
       latitude: row.latitude ? String(row.latitude) : null,
       longitude: row.longitude ? String(row.longitude) : null,
       areaValue: String(row.areaValue),
@@ -71,6 +72,7 @@ export class DrizzleListingRepository implements ListingRepository {
       countryCode: 'PK',
       areaId: s.areaId,
       locationText: s.locationText,
+      googleMapsUrl: s.googleMapsUrl ?? null,
       latitude: s.latitude ?? null,
       longitude: s.longitude ?? null,
       areaValue: s.areaValue,
@@ -116,6 +118,7 @@ export class DrizzleListingRepository implements ListingRepository {
         city: s.city,
         areaId: s.areaId,
         locationText: s.locationText,
+        googleMapsUrl: s.googleMapsUrl ?? null,
         latitude: s.latitude ?? null,
         longitude: s.longitude ?? null,
         areaValue: s.areaValue,
@@ -189,6 +192,42 @@ export class DrizzleListingRepository implements ListingRepository {
     const queryText = input.q?.trim();
     const whereExpr = and(
       eq(listings.ownerId, input.ownerId),
+      queryText
+        ? or(
+            ilike(listings.title, `%${queryText}%`),
+            ilike(listings.locationText, `%${queryText}%`),
+          )
+        : undefined,
+      input.statuses?.length ? inArray(listings.status, input.statuses) : undefined,
+    );
+
+    const [rows, totals] = await Promise.all([
+      this.db
+        .select()
+        .from(listings)
+        .where(whereExpr)
+        .orderBy(desc(listings.createdAt))
+        .limit(input.perPage)
+        .offset(offset),
+      this.db.select({ total: count() }).from(listings).where(whereExpr),
+    ]);
+
+    const items = rows.map((row) => this.toAggregate(row));
+
+    return { items, total: Number(totals[0]?.total ?? 0) };
+  }
+
+  async listByAgency(input: {
+    agencyId: string;
+    page: number;
+    perPage: number;
+    q?: string;
+    statuses?: ListingStatus[];
+  }): Promise<{ items: Listing[]; total: number }> {
+    const offset = (input.page - 1) * input.perPage;
+    const queryText = input.q?.trim();
+    const whereExpr = and(
+      eq(listings.agencyId, input.agencyId),
       queryText
         ? or(
             ilike(listings.title, `%${queryText}%`),

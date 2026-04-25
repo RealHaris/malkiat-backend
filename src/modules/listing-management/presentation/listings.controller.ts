@@ -105,6 +105,49 @@ export class ListingsController {
     };
   }
 
+  @Get('agency/:agencyId')
+  @ApiOperation({ summary: 'List listings by agency' })
+  @ApiResponse(API_RESPONSES.RETRIEVED('Listings'))
+  @ApiHeader(API_HEADERS.AUTHORIZATION)
+  async listByAgency(
+    @Session() session: UserSession,
+    @Param('agencyId') agencyId: string,
+    @Query(new ZodValidationPipe(listingQuerySchema))
+    q: {
+      page: number;
+      perPage: number;
+      q?: string;
+      status?: ListingStatus[];
+    },
+  ) {
+    const actor = await this.agencyRepo.findUserById(session.user.id);
+    if (!actor) throw new ForbiddenException('User not found');
+
+    const membership = await this.agencyRepo.getMembership(agencyId, session.user.id);
+
+    // Enforce access: admin or active agency member only
+    if (actor.platformRole !== 'admin' && (!membership || membership.status !== 'active')) {
+      throw new ForbiddenException('You do not have access to this agency listings');
+    }
+
+    const result = await this.listingRepo.listByAgency({
+      agencyId,
+      page: q.page,
+      perPage: q.perPage,
+      q: q.q,
+      statuses: q.status,
+    });
+
+    return {
+      items: result.items.map((x) => x.snapshot),
+      page: q.page,
+      perPage: q.perPage,
+      total: result.total,
+      q: q.q ?? '',
+      status: q.status ?? [],
+    };
+  }
+
   @Get('admin')
   @ApiOperation(API_OPERATIONS.GET_ADMIN_LISTINGS)
   @ApiResponse(API_RESPONSES.RETRIEVED('Listings'))

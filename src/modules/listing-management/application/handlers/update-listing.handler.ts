@@ -167,6 +167,7 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
       city: command.payload.city,
       areaId: command.payload.areaId,
       locationText: command.payload.locationText,
+      googleMapsUrl: command.payload.googleMapsUrl,
       latitude:
         typeof command.payload.latitude === 'number'
           ? command.payload.latitude.toString()

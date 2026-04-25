@@ -12,6 +12,13 @@ export interface ListingRepository {
     q?: string;
     statuses?: ListingStatus[];
   }): Promise<{ items: Listing[]; total: number }>;
+  listByAgency(input: {
+    agencyId: string;
+    page: number;
+    perPage: number;
+    q?: string;
+    statuses?: ListingStatus[];
+  }): Promise<{ items: Listing[]; total: number }>;
   listAll(input: {
     page: number;
     perPage: number;

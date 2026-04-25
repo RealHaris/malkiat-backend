@@ -27,6 +27,7 @@ export type ListingProps = {
   city: string;
   areaId: string;
   locationText: string;
+  googleMapsUrl?: string | null;
   latitude?: string | null;
   longitude?: string | null;
   areaValue: string;

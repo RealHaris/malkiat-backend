@@ -15,6 +15,7 @@ export class UpdateListingCommand {
       city?: string;
       areaId?: string;
       locationText?: string;
+      googleMapsUrl?: string | null;
       latitude?: number | null;
       longitude?: number | null;
       areaValue?: number;

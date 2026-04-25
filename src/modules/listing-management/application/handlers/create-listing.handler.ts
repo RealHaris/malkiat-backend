@@ -109,6 +109,7 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
       city: command.payload.city,
       areaId: command.payload.areaId,
       locationText: command.payload.locationText,
+      googleMapsUrl: command.payload.googleMapsUrl ?? null,
       latitude: command.payload.latitude?.toString() ?? null,
       longitude: command.payload.longitude?.toString() ?? null,
       areaValue: command.payload.areaValue.toString(),
