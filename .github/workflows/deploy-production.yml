@@ -74,16 +74,14 @@ jobs:
               "systemctl enable docker || true",
               "systemctl restart docker || systemctl start docker",
               "echo disk-before-cleanup && df -h",
-              "docker image prune -af || true",
-              "docker builder prune -af || true",
-              "docker container prune -f || true",
+              "docker image prune -af --filter until=48h || true",
+              "docker builder prune -af --filter until=48h || true",
+              "docker container prune -f --filter until=48h || true",
               "echo disk-after-cleanup && df -h",
               "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \($reg)",
               "export ECR_IMAGE_URI=\($img)",
-              "docker compose -f docker-compose.prod.yml --env-file .env.prod pull",
               "docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --remove-orphans",
-              "sleep 8",
-              "curl -fsS http://localhost:3000/users/public"
+              "curl -fsS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:3000/users/public >/dev/null || { echo api-healthcheck-failed; docker compose -f docker-compose.prod.yml --env-file .env.prod ps; docker compose -f docker-compose.prod.yml --env-file .env.prod logs --tail=200 api || true; docker compose -f docker-compose.prod.yml --env-file .env.prod logs --tail=200 worker || true; exit 1; }"
             ]')
           jq -nc --argjson commands "$COMMANDS_JSON" '{commands:$commands}' > .ssm-deploy-parameters.json
 
