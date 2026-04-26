@@ -83,8 +83,8 @@ describe('CreateListingHandler', () => {
       const result = await handler.execute(command);
 
       expect(result).toEqual({ id: 'test-listing-id' });
-      expect(mockRepo.create).toHaveBeenCalledTimes(1);
-      expect(mockPublisher.publish).toHaveBeenCalledTimes(1);
+      expect(mockRepo.create.mock.calls).toHaveLength(1);
+      expect(mockPublisher.publish.mock.calls).toHaveLength(1);
 
       const publishedEvents = mockPublisher.publish.mock.calls[0][0];
       expect(publishedEvents).toHaveLength(1);
@@ -114,7 +114,7 @@ describe('CreateListingHandler', () => {
       const result = await handler.execute(command);
 
       expect(result).toEqual({ id: 'test-listing-id' });
-      expect(mockRepo.create).toHaveBeenCalledTimes(1);
+      expect(mockRepo.create.mock.calls).toHaveLength(1);
 
       const createdListing = mockRepo.create.mock.calls[0][0];
       expect(createdListing.snapshot.currency).toBe('PKR');
@@ -135,7 +135,7 @@ describe('CreateListingHandler', () => {
       const command = new CreateListingCommand(validCreatePayload());
 
       await expect(handler.execute(command)).rejects.toThrow('Database error');
-      expect(mockPublisher.publish).not.toHaveBeenCalled();
+      expect(mockPublisher.publish.mock.calls).toHaveLength(0);
     });
   });
 });

@@ -98,8 +98,8 @@ describe('UpdateListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.update).toHaveBeenCalledTimes(1);
-      expect(mockPublisher.publish).toHaveBeenCalledTimes(1);
+      expect(mockRepo.update.mock.calls).toHaveLength(1);
+      expect(mockPublisher.publish.mock.calls).toHaveLength(1);
 
       const publishedEvents = mockPublisher.publish.mock.calls[0][0];
       expect(publishedEvents).toHaveLength(1);
@@ -129,7 +129,7 @@ describe('UpdateListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.update).toHaveBeenCalledTimes(1);
+      expect(mockRepo.update.mock.calls).toHaveLength(1);
       const updatedListing = mockRepo.update.mock.calls[0][0];
       expect(updatedListing.snapshot.status).toBe('PUBLISHED');
     });
@@ -158,7 +158,7 @@ describe('UpdateListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.update).toHaveBeenCalledTimes(1);
+      expect(mockRepo.update.mock.calls).toHaveLength(1);
       const updatedListing = mockRepo.update.mock.calls[0][0];
       const snapshot = updatedListing.snapshot;
 
@@ -183,7 +183,7 @@ describe('UpdateListingHandler', () => {
       const command = new UpdateListingCommand(payload);
 
       await expect(handler.execute(command)).rejects.toThrow('Database error');
-      expect(mockPublisher.publish).not.toHaveBeenCalled();
+      expect(mockPublisher.publish.mock.calls).toHaveLength(0);
     });
   });
 });
