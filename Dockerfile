@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM oven/bun:1.3.11 AS deps
+FROM oven/bun:1.3.11-slim AS deps
 
 WORKDIR /app
 
@@ -12,13 +12,13 @@ FROM deps AS build
 
 WORKDIR /app
 
-COPY nest-cli.json tsconfig.json tsconfig.build.json drizzle.config.ts ./
+COPY nest-cli.json tsconfig.json tsconfig.build.json tsconfig.docker.json drizzle.config.ts ./
 COPY src ./src
 COPY scripts ./scripts
 
-RUN bun x nest build
+RUN bun x nest build --path tsconfig.docker.json
 
-FROM oven/bun:1.3.11 AS prod-deps
+FROM oven/bun:1.3.11-slim AS prod-deps
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache \
   bun install --frozen-lockfile --production
 
-FROM oven/bun:1.3.11 AS runtime
+FROM oven/bun:1.3.11-slim AS runtime
 
 WORKDIR /app
 
