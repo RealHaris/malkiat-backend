@@ -21,6 +21,7 @@ env:
   ECR_REPOSITORY: malkiat-backend
   DEPLOY_ROLE_ARN: arn:aws:iam::915028408783:role/malkiat-github-actions-deploy-role
   PROD_INSTANCE_ID: i-0332143e110a204f5
+  SSM_LOG_GROUP: /malkiat/ssm/deploy-production
 
 jobs:
   deploy:
@@ -67,16 +68,16 @@ jobs:
             --arg reg "$IMAGE_REGISTRY" \
             --arg img "$IMAGE_URI" \
             '[
-              "set -euo pipefail",
+              "set -euxo pipefail",
               "APP_DIR=/opt/malkiat/app",
               "cd $APP_DIR",
               "if ! command -v docker >/dev/null 2>&1; then if command -v dnf >/dev/null 2>&1; then dnf install -y docker; elif command -v yum >/dev/null 2>&1; then yum install -y docker; elif command -v apt-get >/dev/null 2>&1; then apt-get update && apt-get install -y docker.io; else echo no supported package manager found; exit 1; fi; fi",
               "systemctl enable docker || true",
               "systemctl restart docker || systemctl start docker",
               "echo disk-before-cleanup && df -h",
-              "docker image prune -af --filter until=48h || true",
-              "docker builder prune -af --filter until=48h || true",
-              "docker container prune -f --filter until=48h || true",
+              "docker image prune -af || true",
+              "docker builder prune -af || true",
+              "docker container prune -f || true",
               "echo disk-after-cleanup && df -h",
               "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \($reg)",
               "export ECR_IMAGE_URI=\($img)",
@@ -88,12 +89,23 @@ jobs:
       - name: Deploy through SSM
         env:
           INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
+          SSM_LOG_GROUP: ${{ env.SSM_LOG_GROUP }}
         run: |
           set -euo pipefail
+          aws logs create-log-group --log-group-name "$SSM_LOG_GROUP" >/dev/null 2>&1 || true
+          aws logs put-retention-policy --log-group-name "$SSM_LOG_GROUP" --retention-in-days 14 >/dev/null 2>&1 || true
+
+          print_ssm_diagnostics() {
+            aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --output json || true
+            aws ssm list-command-invocations --command-id "$COMMAND_ID" --details --output json || true
+            aws logs tail "$SSM_LOG_GROUP" --log-stream-name-prefix "$COMMAND_ID/$INSTANCE_ID" --since 30m --format short || true
+          }
+
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --parameters file://.ssm-deploy-parameters.json \
+            --cloud-watch-output-config "CloudWatchOutputEnabled=true,CloudWatchLogGroupName=$SSM_LOG_GROUP" \
             --query "Command.CommandId" \
             --output text)
 
@@ -106,22 +118,23 @@ jobs:
               break
             fi
             if [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelling" ]; then
-              aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --output json
+              print_ssm_diagnostics
               exit 1
             fi
             sleep 10
           done
 
-          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --output json
+          print_ssm_diagnostics
 
       - name: Run post deploy init
         if: github.event_name == 'workflow_dispatch' && inputs.run_post_deploy_init
         env:
           INSTANCE_ID: ${{ env.PROD_INSTANCE_ID }}
+          SSM_LOG_GROUP: ${{ env.SSM_LOG_GROUP }}
         run: |
           set -euo pipefail
           INIT_JSON=$(jq -nc '[
-            "set -euo pipefail",
+            "set -euxo pipefail",
             "cd /opt/malkiat/app",
             "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run db:migrate",
             "docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api bun run typesense:collection:listings",
@@ -134,8 +147,15 @@ jobs:
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --parameters file://.ssm-init-parameters.json \
+            --cloud-watch-output-config "CloudWatchOutputEnabled=true,CloudWatchLogGroupName=$SSM_LOG_GROUP" \
             --query "Command.CommandId" \
             --output text)
+
+          print_ssm_diagnostics() {
+            aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --output json || true
+            aws ssm list-command-invocations --command-id "$COMMAND_ID" --details --output json || true
+            aws logs tail "$SSM_LOG_GROUP" --log-stream-name-prefix "$COMMAND_ID/$INSTANCE_ID" --since 30m --format short || true
+          }
 
           for _ in $(seq 1 120); do
             STATUS=$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --query "Status" --output text)
@@ -143,10 +163,10 @@ jobs:
               break
             fi
             if [ "$STATUS" = "Cancelled" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "Failed" ] || [ "$STATUS" = "Cancelling" ]; then
-              aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --output json
+              print_ssm_diagnostics
               exit 1
             fi
             sleep 10
           done
 
-          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" --output json
+          print_ssm_diagnostics
