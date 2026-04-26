@@ -12,7 +12,7 @@ FROM deps AS build
 
 WORKDIR /app
 
-COPY nest-cli.json tsconfig.json tsconfig.build.json tsconfig.tsgo.json drizzle.config.ts ./
+COPY nest-cli.json tsconfig.json tsconfig.build.json drizzle.config.ts ./
 COPY src ./src
 COPY scripts ./scripts
 

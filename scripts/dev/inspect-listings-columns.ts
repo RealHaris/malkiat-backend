@@ -6,7 +6,13 @@ async function main() {
   const sql = postgres(url, { prepare: false });
 
   const rows = await sql<
-    { column_name: string; data_type: string; udt_name: string; is_nullable: string; column_default: string | null }[]
+    {
+      column_name: string;
+      data_type: string;
+      udt_name: string;
+      is_nullable: string;
+      column_default: string | null;
+    }[]
   >`
     select column_name, data_type, udt_name, is_nullable, column_default
     from information_schema.columns

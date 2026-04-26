@@ -230,7 +230,8 @@ export class UsersController {
         draft: sql<number>`count(*) filter (where ${listings.status} = 'DRAFT')::int`,
         underReview: sql<number>`count(*) filter (where ${listings.status} = 'UNDER_REVIEW')::int`,
         published: sql<number>`count(*) filter (where ${listings.status} = 'PUBLISHED')::int`,
-        archived: sql<number>`count(*) filter (where ${listings.status} = 'ARCHIVED')::int`,
+        unpublished: sql<number>`count(*) filter (where ${listings.status} = 'UNPUBLISHED')::int`,
+        deleted: sql<number>`count(*) filter (where ${listings.status} = 'DELETED')::int`,
       })
       .from(listings)
       .where(eq(listings.ownerId, session.user.id));
@@ -243,7 +244,9 @@ export class UsersController {
     const [membershipCount] = await this.db
       .select({ total: sql<number>`count(*)::int` })
       .from(agencyMemberships)
-      .where(and(eq(agencyMemberships.userId, session.user.id), eq(agencyMemberships.status, 'active')));
+      .where(
+        and(eq(agencyMemberships.userId, session.user.id), eq(agencyMemberships.status, 'active')),
+      );
 
     return {
       account: {
@@ -256,7 +259,8 @@ export class UsersController {
         draft: listingStats?.draft ?? 0,
         underReview: listingStats?.underReview ?? 0,
         published: listingStats?.published ?? 0,
-        archived: listingStats?.archived ?? 0,
+        unpublished: listingStats?.unpublished ?? 0,
+        deleted: listingStats?.deleted ?? 0,
       },
       agencies: {
         ownedActive: ownedAgencyCount?.total ?? 0,
@@ -301,7 +305,9 @@ export class UsersController {
     const conditions: SQL[] = [];
 
     if (query.q) {
-      conditions.push(sql`${ilike(user.name, `%${query.q}%`)} OR ${ilike(user.email, `%${query.q}%`)}`);
+      conditions.push(
+        sql`${ilike(user.name, `%${query.q}%`)} OR ${ilike(user.email, `%${query.q}%`)}`,
+      );
     }
 
     if (query.role) {
@@ -462,23 +468,19 @@ export class UsersController {
       updatedAt: new Date(),
     };
 
-    const [updated] = await this.db
-      .update(user)
-      .set(updates)
-      .where(eq(user.id, userId))
-      .returning({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        image: user.image,
-        phoneNumber: user.phoneNumber,
-        phoneNumberVerified: user.phoneNumberVerified,
-        platformRole: user.platformRole,
-        isActive: user.isActive,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      });
+    const [updated] = await this.db.update(user).set(updates).where(eq(user.id, userId)).returning({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified,
+      image: user.image,
+      phoneNumber: user.phoneNumber,
+      phoneNumberVerified: user.phoneNumberVerified,
+      platformRole: user.platformRole,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    });
 
     if (!updated) {
       throw new NotFoundException('User not found');
@@ -495,7 +497,10 @@ export class UsersController {
       throw new BadRequestException('You cannot delete your own account');
     }
 
-    const deleted = await this.db.delete(user).where(eq(user.id, userId)).returning({ id: user.id });
+    const deleted = await this.db
+      .delete(user)
+      .where(eq(user.id, userId))
+      .returning({ id: user.id });
 
     if (!deleted[0]) {
       throw new NotFoundException('User not found');
@@ -556,7 +561,11 @@ export class UsersController {
   ) {
     await this.requireAdmin(session);
 
-    const [targetUser] = await this.db.select({ id: user.id }).from(user).where(eq(user.id, userId)).limit(1);
+    const [targetUser] = await this.db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
     if (!targetUser) {
       throw new NotFoundException('User not found');
     }

@@ -7,18 +7,23 @@ import { DI } from '@app/di.tokens';
 import { AgenciesModule } from '@modules/identity-access/agencies/agencies.module';
 
 import { CreateListingHandler } from './application/handlers/create-listing.handler';
+import { ChangeListingStatusHandler } from './application/handlers/change-listing-status.handler';
 import { DeleteListingHandler } from './application/handlers/delete-listing.handler';
 import { UpdateListingHandler } from './application/handlers/update-listing.handler';
 import { DrizzleListingRepository } from './infrastructure/drizzle/drizzle-listing.repository';
 import { BullmqListingEventsPublisher } from './infrastructure/queue/bullmq-listing-events.publisher';
 import { ListingsController } from './presentation/listings.controller';
-import { ListingMediaController } from './presentation/listing-media.controller';
 
-const commandHandlers = [CreateListingHandler, UpdateListingHandler, DeleteListingHandler];
+const commandHandlers = [
+  CreateListingHandler,
+  UpdateListingHandler,
+  ChangeListingStatusHandler,
+  DeleteListingHandler,
+];
 
 @Module({
   imports: [CqrsModule, AgenciesModule],
-  controllers: [ListingsController, ListingMediaController],
+  controllers: [ListingsController],
   providers: [
     ...commandHandlers,
     {

@@ -1,9 +1,14 @@
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SearchListingsHandler } from '@modules/listing-discovery/application/handlers/search-listings.handler';
 import { SearchListingsQuery } from '@modules/listing-discovery/application/queries/search-listings.query';
 import { DI } from '@app/di.tokens';
 import { APP_ENV } from '@shared/config/config.constants';
-import { mockTypesenseClient, mockAppEnv } from '@test/mocks/providers/command-bus.mock';
+import {
+  mockTypesenseClient,
+  mockAppEnv,
+  mockTypesenseListingsDocumentSearch,
+} from '@test/mocks/providers/command-bus.mock';
 
 describe('SearchListingsHandler', () => {
   let handler: SearchListingsHandler;
@@ -34,6 +39,7 @@ describe('SearchListingsHandler', () => {
     it('should search listings with empty query', async () => {
       const query = new SearchListingsQuery({
         q: '',
+        city: 'Karachi',
       });
 
       await handler.execute(query);
@@ -44,6 +50,7 @@ describe('SearchListingsHandler', () => {
     it('should search listings with query term', async () => {
       const query = new SearchListingsQuery({
         q: 'modern apartment',
+        city: 'Karachi',
       });
 
       await handler.execute(query);
@@ -54,6 +61,7 @@ describe('SearchListingsHandler', () => {
     it('should use default pagination when not provided', async () => {
       const query = new SearchListingsQuery({
         q: 'search term',
+        city: 'Karachi',
       });
 
       await handler.execute(query);
@@ -64,6 +72,7 @@ describe('SearchListingsHandler', () => {
     it('should apply price range filters when provided', async () => {
       const query = new SearchListingsQuery({
         q: 'apartment',
+        city: 'Karachi',
         minPrice: 1000000,
         maxPrice: 5000000,
       });
@@ -76,6 +85,7 @@ describe('SearchListingsHandler', () => {
     it('should apply minPrice filter only', async () => {
       const query = new SearchListingsQuery({
         q: 'house',
+        city: 'Karachi',
         minPrice: 2000000,
       });
 
@@ -87,6 +97,7 @@ describe('SearchListingsHandler', () => {
     it('should apply maxPrice filter only', async () => {
       const query = new SearchListingsQuery({
         q: 'villa',
+        city: 'Karachi',
         maxPrice: 10000000,
       });
 
@@ -95,26 +106,28 @@ describe('SearchListingsHandler', () => {
       expect(mockTypesense.search).toHaveBeenCalled();
     });
 
-    it('should apply propertyType filter', async () => {
+    it('should forward facet filters to Typesense filter_by', async () => {
       const query = new SearchListingsQuery({
         q: 'search term',
-        propertyType: 'apartment',
+        city: 'Karachi',
+        areaIds: ['00000000-0000-4000-8000-000000000001'],
+        purpose: 'RENT',
+        propertyCategory: 'HOME',
+        propertySubtypeId: '00000000-0000-4000-8000-000000000002',
+        minAreaSqft: 500,
+        maxAreaSqft: 2000,
+        bedroomsCount: 3,
       });
 
       await handler.execute(query);
 
-      expect(mockTypesense.search).toHaveBeenCalled();
-    });
-
-    it('should apply currency filter', async () => {
-      const query = new SearchListingsQuery({
-        q: 'search term',
-        currency: 'USD',
-      });
-
-      await handler.execute(query);
-
-      expect(mockTypesense.search).toHaveBeenCalled();
+      expect(mockTypesenseListingsDocumentSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          filter_by: expect.stringMatching(
+            /status:=PUBLISHED.*city:=Karachi.*areaId:=\[.*\].*purpose:=RENT.*propertyCategory:=HOME.*propertySubtypeId:=00000000-0000-4000-8000-000000000002.*areaSqft:>=500.*areaSqft:<=2000.*bedroomsCount:=3/s,
+          ),
+        }),
+      );
     });
 
     it('should apply sorting when provided', async () => {
@@ -123,6 +136,7 @@ describe('SearchListingsHandler', () => {
       for (const sort of sortOptions) {
         const query = new SearchListingsQuery({
           q: 'search term',
+          city: 'Karachi',
           sort,
         });
         await handler.execute(query);
@@ -134,18 +148,23 @@ describe('SearchListingsHandler', () => {
     it('should combine all filters correctly', async () => {
       const query = new SearchListingsQuery({
         q: 'modern apartment',
+        city: 'Karachi',
         page: 2,
         perPage: 25,
         sort: 'price_asc',
-        propertyType: 'apartment',
-        currency: 'PKR',
+        propertyCategory: 'HOME',
+        purpose: 'SELL',
         minPrice: 3000000,
         maxPrice: 7000000,
       });
 
       await handler.execute(query);
 
-      expect(mockTypesense.search).toHaveBeenCalled();
+      const call = mockTypesenseListingsDocumentSearch.mock.calls[0][0] as { filter_by: string };
+      expect(call.filter_by).toContain('propertyCategory:=HOME');
+      expect(call.filter_by).toContain('purpose:=SELL');
+      expect(call.filter_by).toContain('priceAmount:>=3000000');
+      expect(call.filter_by).toContain('priceAmount:<=7000000');
     });
 
     it('should handle search service errors gracefully', async () => {
@@ -153,6 +172,7 @@ describe('SearchListingsHandler', () => {
 
       const query = new SearchListingsQuery({
         q: 'search term',
+        city: 'Karachi',
       });
 
       await expect(handler.execute(query)).rejects.toThrow('Search service unavailable');

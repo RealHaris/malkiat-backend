@@ -43,12 +43,32 @@ async function main() {
     const rows = await sql`
       select
         id,
+        owner_id as "ownerId",
         title,
         description,
+        purpose,
         status,
-        property_type as "propertyType",
+        condition,
+        bedrooms_count as "bedroomsCount",
+        bathrooms_count as "bathroomsCount",
+        availability,
+        property_category as "propertyCategory",
+        property_subtype_id as "propertySubtypeId",
+        city,
+        area_id as "areaId",
+        location_text as "locationText",
+        google_maps_url as "googleMapsUrl",
+        area_value as "areaValue",
+        area_unit as "areaUnit",
+        area_sqft as "areaSqft",
         currency,
         price_amount as "priceAmount",
+        installment_available as "installmentAvailable",
+        ready_for_possession as "readyForPossession",
+        images_json as "imagesJson",
+        video_url as "videoUrl",
+        platforms,
+        published_at as "publishedAt",
         created_at as "createdAt"
       from listings
       order by created_at asc
@@ -61,12 +81,37 @@ async function main() {
       .map((r) =>
         JSON.stringify({
           id: String(r.id),
+          ownerId: String(r.ownerId),
           title: String(r.title ?? ''),
           description: r.description ?? undefined,
+          purpose: String(r.purpose),
           status: String(r.status ?? 'DRAFT'),
-          propertyType: r.propertyType ?? undefined,
+          condition: r.condition ?? undefined,
+          bedroomsCount: r.bedroomsCount ? Number(r.bedroomsCount) : undefined,
+          bathroomsCount: r.bathroomsCount ? Number(r.bathroomsCount) : undefined,
+          availabilityDays: Array.isArray(r.availability?.days)
+            ? r.availability.days.map((d) => String(d))
+            : undefined,
+          propertyCategory: r.propertyCategory ?? undefined,
+          propertySubtypeId: r.propertySubtypeId ? String(r.propertySubtypeId) : undefined,
+          city: r.city ?? undefined,
+          areaId: r.areaId ? String(r.areaId) : undefined,
+          locationText: r.locationText ?? undefined,
+          googleMapsUrl: r.googleMapsUrl ?? undefined,
+          areaValue: Number(r.areaValue ?? 0),
+          areaUnit: String(r.areaUnit),
+          areaSqft:
+            typeof r.areaSqft === 'undefined' || r.areaSqft === null
+              ? undefined
+              : Number(r.areaSqft),
           currency: String(r.currency ?? 'PKR'),
           priceAmount: Number(r.priceAmount ?? 0),
+          installmentAvailable: Boolean(r.installmentAvailable),
+          readyForPossession: Boolean(r.readyForPossession),
+          imagesJson: Array.isArray(r.imagesJson) ? r.imagesJson.map(String) : [],
+          videoUrl: r.videoUrl ?? undefined,
+          platforms: Array.isArray(r.platforms) ? r.platforms.map(String) : [],
+          publishedAt: r.publishedAt ? toUnixSeconds(r.publishedAt) : undefined,
           createdAt: toUnixSeconds(r.createdAt ?? new Date()),
         }),
       )

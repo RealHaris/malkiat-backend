@@ -2,10 +2,12 @@ import { z } from 'zod';
 import {
   AREA_UNITS,
   CURRENCY_CODES,
+  LISTING_CONDITIONS,
   LISTING_PURPOSES,
   LISTING_STATUS,
   PROPERTY_CATEGORIES,
   VALIDATION_MESSAGES,
+  WEEKDAYS,
 } from '@shared/constants/api.constants';
 import { ListingStatus } from '../../domain/listing-status';
 
@@ -19,13 +21,24 @@ const updateListingSchema = z.object({
   description: z.string().max(2000, VALIDATION_MESSAGES.MAX_LENGTH('Description', 2000)).optional(),
   purpose: z.enum(LISTING_PURPOSES).optional(),
   propertyCategory: z.enum(PROPERTY_CATEGORIES).optional(),
-  propertySubtypeId: z.string().uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Property subtype ID') }).optional(),
+  propertySubtypeId: z
+    .string()
+    .uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Property subtype ID') })
+    .optional(),
   city: z
     .string()
     .optional()
     .refine((v) => !v || v === 'Karachi', { message: VALIDATION_MESSAGES.KARACHI_REQUIRED }),
-  areaId: z.string().uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Area ID') }).optional(),
-  locationText: z.string().min(3, VALIDATION_MESSAGES.MIN_LENGTH('Location', 3)).max(500).optional(),
+  areaId: z
+    .string()
+    .uuid({ message: VALIDATION_MESSAGES.INVALID_UUID('Area ID') })
+    .optional(),
+  locationText: z
+    .string()
+    .min(3, VALIDATION_MESSAGES.MIN_LENGTH('Location', 3))
+    .max(500)
+    .optional(),
+  googleMapsUrl: z.string().url().nullable().optional(),
   agencyId: z.string().uuid().nullable().optional(),
   areaValue: z.number().positive(VALIDATION_MESSAGES.POSITIVE_NUMBER('Area value')).optional(),
   areaUnit: z.enum(AREA_UNITS).optional(),
@@ -34,6 +47,16 @@ const updateListingSchema = z.object({
     .enum(CURRENCY_CODES, {
       message: VALIDATION_MESSAGES.INVALID_ENUM('Currency', [...CURRENCY_CODES]),
     })
+    .optional(),
+  condition: z.enum(LISTING_CONDITIONS).nullable().optional(),
+  availability: z
+    .object({
+      days: z
+        .array(z.enum(WEEKDAYS))
+        .min(1, VALIDATION_MESSAGES.REQUIRED('Availability days'))
+        .transform((days) => [...new Set(days)]),
+    })
+    .nullable()
     .optional(),
   installmentAvailable: z.boolean().optional(),
   readyForPossession: z.boolean().optional(),

@@ -27,7 +27,10 @@ export const API_OPERATIONS = {
   CREATE_LISTING: { summary: 'Create a new listing' },
   UPDATE_LISTING: { summary: 'Update an existing listing' },
   DELETE_LISTING: { summary: 'Delete a listing' },
+  UPDATE_LISTING_STATUS: { summary: 'Change listing status' },
   GET_MY_LISTINGS: { summary: 'Get authenticated user listings' },
+  GET_ADMIN_LISTINGS: { summary: 'Get all listings for admin' },
+  GET_LISTING_BY_ID: { summary: 'Get managed listing by id' },
   GET_PUBLIC_LISTINGS: { summary: 'Get public listings' },
   DISCOVER_LISTINGS: { summary: 'Discover listings' },
   SEARCH_LISTINGS: { summary: 'Search listings' },
@@ -88,7 +91,13 @@ export const API_HEADERS = {
   },
 } as const;
 
-export const LISTING_STATUS = ['DRAFT', 'UNDER_REVIEW', 'PUBLISHED', 'ARCHIVED'] as const;
+export const LISTING_STATUS = [
+  'DRAFT',
+  'UNDER_REVIEW',
+  'PUBLISHED',
+  'UNPUBLISHED',
+  'DELETED',
+] as const;
 export const SORT_OPTIONS = ['newest', 'price_asc', 'price_desc', 'relevance'] as const;
 export const DISCOVERY_SORT_OPTIONS = ['newest', 'price_asc', 'price_desc'] as const;
 export const SEARCH_SORT_OPTIONS = ['relevance', 'newest', 'price_asc', 'price_desc'] as const;
@@ -102,6 +111,22 @@ export const PROPERTY_CATEGORIES = ['HOME', 'PLOT', 'COMMERCIAL'] as const;
 export const LISTING_PURPOSES = ['SELL', 'RENT'] as const;
 export const AREA_UNITS = ['MARLA', 'SQFT', 'SQYD', 'KANAL'] as const;
 export const CURRENCY_CODES = ['PKR'] as const;
+export const LISTING_CONDITIONS = [
+  'BRAND_NEW',
+  'EXCELLENT',
+  'GOOD',
+  'NEED_MINOR_WORK',
+  'NEED_MAJOR_WORK',
+] as const;
+export const WEEKDAYS = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+] as const;
 export const PROPERTY_TYPES = [
   'house',
   'flat',

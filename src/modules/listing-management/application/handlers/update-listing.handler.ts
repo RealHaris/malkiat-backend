@@ -9,7 +9,21 @@ import type { ListingRepository } from '@modules/listing-management/application/
 import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
 import { areas, propertySubtypes, toSqft } from '@infra/db/drizzle/schema';
 import { DrizzleAgencyRepository } from '@modules/identity-access/agencies/infrastructure/drizzle-agency.repository';
-import { canPostForAgency, isPlatformAdmin } from '@modules/identity-access/agencies/presentation/agency-authz';
+import {
+  canPostForAgency,
+  isPlatformAdmin,
+} from '@modules/identity-access/agencies/presentation/agency-authz';
+import type { ListingStatus } from '@modules/listing-management/domain/listing-status';
+
+const ALL_WEEKDAYS = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+] as const;
 
 @CommandHandler(UpdateListingCommand)
 export class UpdateListingHandler implements ICommandHandler<UpdateListingCommand> {
@@ -53,6 +67,14 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
       throw new ForbiddenException('You are not allowed to update this listing');
     }
 
+    if (typeof command.payload.status !== 'undefined') {
+      this.assertStatusChangeAllowed({
+        currentStatus: listing.snapshot.status,
+        nextStatus: command.payload.status,
+        actorIsAdmin,
+      });
+    }
+
     if (typeof command.payload.agencyId !== 'undefined') {
       if (command.payload.agencyId) {
         const agency = await this.agencyRepo.getAgencyById(command.payload.agencyId);
@@ -63,7 +85,12 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
           command.payload.agencyId,
           actorUserId,
         );
-        if (!canPostForAgency({ id: actor.id, platformRole: actor.platformRole }, membership ?? undefined)) {
+        if (
+          !canPostForAgency(
+            { id: actor.id, platformRole: actor.platformRole },
+            membership ?? undefined,
+          )
+        ) {
           throw new ForbiddenException('You cannot assign this listing to the selected agency');
         }
       } else if (!actorIsAdmin && !actorOwnsListing) {
@@ -83,7 +110,8 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
         .limit(1);
       if (!subtype) throw new BadRequestException('Invalid property subtype ID');
 
-      const selectedCategory = command.payload.propertyCategory ?? listing.snapshot.propertyCategory;
+      const selectedCategory =
+        command.payload.propertyCategory ?? listing.snapshot.propertyCategory;
       if (subtype.category !== selectedCategory) {
         throw new BadRequestException('Property subtype does not belong to selected category');
       }
@@ -112,12 +140,22 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
 
     const publishedAt =
       command.payload.status === 'PUBLISHED'
-        ? listing.snapshot.publishedAt ?? new Date()
+        ? (listing.snapshot.publishedAt ?? new Date())
         : command.payload.status === 'DRAFT' ||
             command.payload.status === 'UNDER_REVIEW' ||
-            command.payload.status === 'ARCHIVED'
+            command.payload.status === 'UNPUBLISHED' ||
+            command.payload.status === 'DELETED'
           ? null
           : undefined;
+
+    const availability =
+      typeof command.payload.availability === 'undefined'
+        ? undefined
+        : command.payload.availability &&
+            command.payload.availability.days.length === ALL_WEEKDAYS.length &&
+            ALL_WEEKDAYS.every((day) => command.payload.availability?.days.includes(day))
+          ? null
+          : command.payload.availability;
 
     listing.update({
       title: command.payload.title,
@@ -129,14 +167,22 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
       city: command.payload.city,
       areaId: command.payload.areaId,
       locationText: command.payload.locationText,
-      latitude: typeof command.payload.latitude === 'number' ? command.payload.latitude.toString() : undefined,
+      googleMapsUrl: command.payload.googleMapsUrl,
+      latitude:
+        typeof command.payload.latitude === 'number'
+          ? command.payload.latitude.toString()
+          : undefined,
       longitude:
-        typeof command.payload.longitude === 'number' ? command.payload.longitude.toString() : undefined,
+        typeof command.payload.longitude === 'number'
+          ? command.payload.longitude.toString()
+          : undefined,
       areaValue: areaValueStr,
       areaUnit: command.payload.areaUnit,
       areaSqft: areaSqftStr,
       priceAmount: priceAmountStr,
       currency: command.payload.currency,
+      condition: command.payload.condition,
+      availability,
       installmentAvailable: command.payload.installmentAvailable,
       readyForPossession: command.payload.readyForPossession,
       bedroomsCount: command.payload.bedroomsCount,
@@ -151,5 +197,27 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
 
     await this.repo.update(listing);
     await this.publisher.publish(listing.pullDomainEvents());
+  }
+
+  private assertStatusChangeAllowed(input: {
+    currentStatus: ListingStatus;
+    nextStatus: ListingStatus;
+    actorIsAdmin: boolean;
+  }) {
+    const { currentStatus, nextStatus, actorIsAdmin } = input;
+
+    if (currentStatus === nextStatus || actorIsAdmin) {
+      return;
+    }
+
+    if (nextStatus === 'PUBLISHED' || nextStatus === 'UNPUBLISHED' || nextStatus === 'DELETED') {
+      throw new ForbiddenException('Only admin can change listing to this status');
+    }
+
+    if (currentStatus === 'PUBLISHED' || currentStatus === 'UNPUBLISHED') {
+      throw new ForbiddenException(
+        'Only admin can change the status of a published or unpublished listing',
+      );
+    }
   }
 }

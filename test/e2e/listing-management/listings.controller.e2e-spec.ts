@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Patch, Post } from '@nestjs/common';
+import { jest } from '@jest/globals';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Patch, Post } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 const request = require('supertest');
@@ -6,42 +7,72 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateListingCommand } from '@modules/listing-management/application/commands/create-listing.command';
 import { UpdateListingCommand } from '@modules/listing-management/application/commands/update-listing.command';
 import { DeleteListingCommand } from '@modules/listing-management/application/commands/delete-listing.command';
+import { ZodValidationPipe } from '@shared/pipes/zod-validation.pipe';
+import { createListingSchema } from '@modules/listing-management/presentation/dto/create-listing.dto';
+import { updateListingSchema } from '@modules/listing-management/presentation/dto/update-listing.dto';
+import { deleteListingSchema } from '@modules/listing-management/presentation/dto/delete-listing.dto';
+import type { CreateListingDto } from '@modules/listing-management/presentation/dto/create-listing.dto';
+import type { UpdateListingDto } from '@modules/listing-management/presentation/dto/update-listing.dto';
+import type { DeleteListingDto } from '@modules/listing-management/presentation/dto/delete-listing.dto';
+import { LISTING_STATUS } from '@shared/constants/api.constants';
+
+import { MOCK_AREA_ID, MOCK_SUBTYPE_ID } from '@test/fixtures/factories';
+
+const LISTING_UUID = '00000000-0000-4000-8000-000000000001';
+const OWNER_UUID = '00000000-0000-4000-8000-000000000002';
 
 @Controller('listings')
 class MockListingsController {
   constructor(private readonly commandBus: CommandBus) {}
 
   @Post()
-  async create(@Body() dto: any) {
-    const result = await this.commandBus.execute(new CreateListingCommand(dto));
-    return result;
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body(new ZodValidationPipe(createListingSchema)) dto: CreateListingDto) {
+    return this.commandBus.execute(
+      new CreateListingCommand({
+        ...dto,
+        ownerId: OWNER_UUID,
+      }),
+    );
   }
 
   @Patch()
-  async update(@Body() dto: any) {
-    await this.commandBus.execute(new UpdateListingCommand(dto));
+  async update(@Body(new ZodValidationPipe(updateListingSchema)) dto: UpdateListingDto) {
+    await this.commandBus.execute(
+      new UpdateListingCommand({
+        ...dto,
+        ownerId: OWNER_UUID,
+      }),
+    );
     return { ok: true };
   }
 
   @Delete()
-  async delete(@Body() dto: any) {
-    await this.commandBus.execute(new DeleteListingCommand(dto));
+  async delete(@Body(new ZodValidationPipe(deleteListingSchema)) dto: DeleteListingDto) {
+    await this.commandBus.execute(
+      new DeleteListingCommand({
+        ...dto,
+        ownerId: OWNER_UUID,
+      }),
+    );
     return { ok: true };
   }
 }
 
 describe('ListingsController (e2e)', () => {
   let app: INestApplication;
-  let commandBus: CommandBus;
+  let commandBusExecute: jest.MockedFunction<(command: unknown) => Promise<unknown>>;
 
   beforeAll(async () => {
+    commandBusExecute = jest.fn();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [MockListingsController],
       providers: [
         {
           provide: CommandBus,
           useValue: {
-            execute: jest.fn(),
+            execute: commandBusExecute,
           },
         },
       ],
@@ -56,46 +87,51 @@ describe('ListingsController (e2e)', () => {
       }),
     );
     await app.init();
-
-    commandBus = moduleFixture.get<CommandBus>(CommandBus);
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  describe('POST /listings', () => {
-    const validPayload = {
-      id: 'test-listing-id',
-      ownerId: 'test-owner-id',
+  const validCreatePayload = (): CreateListingDto =>
+    createListingSchema.parse({
       title: 'Test Listing',
-      priceAmount: '100000',
-    };
+      purpose: 'SELL',
+      propertyCategory: 'HOME',
+      propertySubtypeId: MOCK_SUBTYPE_ID,
+      areaId: MOCK_AREA_ID,
+      locationText: 'DHA Phase 5, Karachi',
+      areaValue: 5,
+      areaUnit: 'MARLA',
+      priceAmount: 100000,
+      latitude: 24.86,
+      longitude: 67.01,
+    });
 
+  describe('POST /listings', () => {
     it('should create a listing with valid data', async () => {
-      (commandBus.execute as jest.Mock).mockResolvedValueOnce({
-        id: 'test-listing-id',
+      commandBusExecute.mockResolvedValueOnce({
+        id: LISTING_UUID,
       });
 
       const response = await request(app.getHttpServer())
         .post('/listings')
-        .send(validPayload)
+        .send(validCreatePayload())
         .expect(201);
 
-      expect(response.body).toEqual({ id: 'test-listing-id' });
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(CreateListingCommand));
+      expect(response.body).toEqual({ id: LISTING_UUID });
+      expect(commandBusExecute).toHaveBeenCalledWith(expect.any(CreateListingCommand));
     });
 
-    it('should create a listing with all optional fields', async () => {
+    it('should create a listing with optional fields', async () => {
       const payloadWithAllFields = {
-        ...validPayload,
+        ...validCreatePayload(),
         description: 'Test Description',
-        currency: 'USD',
-        propertyType: 'apartment',
+        currency: 'PKR' as const,
       };
 
-      (commandBus.execute as jest.Mock).mockResolvedValueOnce({
-        id: 'test-listing-id',
+      commandBusExecute.mockResolvedValueOnce({
+        id: LISTING_UUID,
       });
 
       const response = await request(app.getHttpServer())
@@ -103,75 +139,33 @@ describe('ListingsController (e2e)', () => {
         .send(payloadWithAllFields)
         .expect(201);
 
-      expect(response.body).toEqual({ id: 'test-listing-id' });
-    });
-
-    it('should return 400 when id is missing', () => {
-      const invalidPayload = {
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-      };
-
-      return request(app.getHttpServer()).post('/listings').send(invalidPayload).expect(400);
-    });
-
-    it('should return 400 when ownerId is missing', () => {
-      const invalidPayload = {
-        id: 'test-listing-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-      };
-
-      return request(app.getHttpServer()).post('/listings').send(invalidPayload).expect(400);
+      expect(response.body).toEqual({ id: LISTING_UUID });
     });
 
     it('should return 400 when title is missing', () => {
-      const invalidPayload = {
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        priceAmount: '100000',
-      };
-
-      return request(app.getHttpServer()).post('/listings').send(invalidPayload).expect(400);
+      const { title: _t, ...rest } = validCreatePayload();
+      return request(app.getHttpServer()).post('/listings').send(rest).expect(400);
     });
 
     it('should return 400 when priceAmount is missing', () => {
-      const invalidPayload = {
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-      };
-
-      return request(app.getHttpServer()).post('/listings').send(invalidPayload).expect(400);
+      const { priceAmount: _p, ...rest } = validCreatePayload();
+      return request(app.getHttpServer()).post('/listings').send(rest).expect(400);
     });
 
-    it('should return 400 for non-string id', () => {
+    it('should return 400 for invalid purpose', () => {
       const invalidPayload = {
-        id: 123,
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
+        ...validCreatePayload(),
+        purpose: 'INVALID',
       };
-
-      return request(app.getHttpServer()).post('/listings').send(invalidPayload).expect(400);
-    });
-
-    it('should reject extra fields with forbidNonWhitelisted', () => {
-      const invalidPayload = {
-        ...validPayload,
-        extraField: 'should be rejected',
-      };
-
       return request(app.getHttpServer()).post('/listings').send(invalidPayload).expect(400);
     });
 
     it('should handle command bus errors', async () => {
-      (commandBus.execute as jest.Mock).mockRejectedValueOnce(new Error('Database error'));
+      commandBusExecute.mockRejectedValueOnce(new Error('Database error'));
 
       const response = await request(app.getHttpServer())
         .post('/listings')
-        .send(validPayload)
+        .send(validCreatePayload())
         .expect(500);
 
       expect(response.body).toHaveProperty('message', 'Internal server error');
@@ -179,14 +173,13 @@ describe('ListingsController (e2e)', () => {
   });
 
   describe('PATCH /listings', () => {
-    const validPayload = {
-      id: 'test-listing-id',
-      ownerId: 'test-owner-id',
+    const validPayload: UpdateListingDto = {
+      id: LISTING_UUID,
       title: 'Updated Title',
     };
 
     it('should update a listing with valid data', async () => {
-      (commandBus.execute as jest.Mock).mockResolvedValueOnce(undefined);
+      commandBusExecute.mockResolvedValueOnce(undefined);
 
       const response = await request(app.getHttpServer())
         .patch('/listings')
@@ -194,22 +187,21 @@ describe('ListingsController (e2e)', () => {
         .expect(200);
 
       expect(response.body).toEqual({ ok: true });
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(UpdateListingCommand));
+      expect(commandBusExecute).toHaveBeenCalledWith(expect.any(UpdateListingCommand));
     });
 
-    it('should update a listing with all optional fields', async () => {
-      const payloadWithAllFields = {
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
+    it('should update a listing with optional fields', async () => {
+      const payloadWithAllFields: UpdateListingDto = {
+        id: LISTING_UUID,
         title: 'Updated Title',
         description: 'Updated Description',
-        priceAmount: '150000',
-        currency: 'USD',
-        propertyType: 'villa',
+        priceAmount: 150000,
+        currency: 'PKR',
+        propertyCategory: 'PLOT',
         status: 'PUBLISHED',
       };
 
-      (commandBus.execute as jest.Mock).mockResolvedValueOnce(undefined);
+      commandBusExecute.mockResolvedValueOnce(undefined);
 
       const response = await request(app.getHttpServer())
         .patch('/listings')
@@ -221,16 +213,6 @@ describe('ListingsController (e2e)', () => {
 
     it('should return 400 when id is missing', () => {
       const invalidPayload = {
-        ownerId: 'test-owner-id',
-        title: 'Updated Title',
-      };
-
-      return request(app.getHttpServer()).patch('/listings').send(invalidPayload).expect(400);
-    });
-
-    it('should return 400 when ownerId is missing', () => {
-      const invalidPayload = {
-        id: 'test-listing-id',
         title: 'Updated Title',
       };
 
@@ -239,8 +221,7 @@ describe('ListingsController (e2e)', () => {
 
     it('should return 400 for invalid status value', () => {
       const invalidPayload = {
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
+        id: LISTING_UUID,
         status: 'INVALID_STATUS',
       };
 
@@ -248,23 +229,20 @@ describe('ListingsController (e2e)', () => {
     });
 
     it('should allow valid status values', async () => {
-      const validStatuses = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
-
-      for (const status of validStatuses) {
-        const payload = {
-          id: 'test-listing-id',
-          ownerId: 'test-owner-id',
+      for (const status of LISTING_STATUS) {
+        const payload: UpdateListingDto = {
+          id: LISTING_UUID,
           status,
         };
 
-        (commandBus.execute as jest.Mock).mockResolvedValueOnce(undefined);
+        commandBusExecute.mockResolvedValueOnce(undefined);
 
         await request(app.getHttpServer()).patch('/listings').send(payload).expect(200);
       }
     });
 
     it('should handle command bus errors', async () => {
-      (commandBus.execute as jest.Mock).mockRejectedValueOnce(new Error('Database error'));
+      commandBusExecute.mockRejectedValueOnce(new Error('Database error'));
 
       const response = await request(app.getHttpServer())
         .patch('/listings')
@@ -276,13 +254,12 @@ describe('ListingsController (e2e)', () => {
   });
 
   describe('DELETE /listings', () => {
-    const validPayload = {
-      id: 'test-listing-id',
-      ownerId: 'test-owner-id',
+    const validPayload: DeleteListingDto = {
+      id: LISTING_UUID,
     };
 
     it('should delete a listing with valid data', async () => {
-      (commandBus.execute as jest.Mock).mockResolvedValueOnce(undefined);
+      commandBusExecute.mockResolvedValueOnce(undefined);
 
       const response = await request(app.getHttpServer())
         .delete('/listings')
@@ -290,27 +267,17 @@ describe('ListingsController (e2e)', () => {
         .expect(200);
 
       expect(response.body).toEqual({ ok: true });
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(DeleteListingCommand));
+      expect(commandBusExecute).toHaveBeenCalledWith(expect.any(DeleteListingCommand));
     });
 
     it('should return 400 when id is missing', () => {
-      const invalidPayload = {
-        ownerId: 'test-owner-id',
-      };
-
-      return request(app.getHttpServer()).delete('/listings').send(invalidPayload).expect(400);
-    });
-
-    it('should return 400 when ownerId is missing', () => {
-      const invalidPayload = {
-        id: 'test-listing-id',
-      };
+      const invalidPayload = {};
 
       return request(app.getHttpServer()).delete('/listings').send(invalidPayload).expect(400);
     });
 
     it('should handle command bus errors', async () => {
-      (commandBus.execute as jest.Mock).mockRejectedValueOnce(new Error('Database error'));
+      commandBusExecute.mockRejectedValueOnce(new Error('Database error'));
 
       const response = await request(app.getHttpServer())
         .delete('/listings')
@@ -330,8 +297,8 @@ describe('ListingsController (e2e)', () => {
         .expect(400);
     });
 
-    it('should handle empty body', () => {
-      return request(app.getHttpServer()).post('/listings').send({}).expect(201);
+    it('should reject empty body', () => {
+      return request(app.getHttpServer()).post('/listings').send({}).expect(400);
     });
   });
 });

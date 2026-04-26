@@ -9,11 +9,16 @@ export type ListingCard = {
   city: string;
   areaId: string;
   locationText: string;
+  googleMapsUrl?: string | null;
   areaValue: number;
   areaUnit: 'MARLA' | 'SQFT' | 'SQYD' | 'KANAL';
   areaSqft: number;
   priceAmount: number;
   currency: 'PKR';
+  condition?: 'BRAND_NEW' | 'EXCELLENT' | 'GOOD' | 'NEED_MINOR_WORK' | 'NEED_MAJOR_WORK' | null;
+  availability?: {
+    days: Array<'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'>;
+  } | null;
   installmentAvailable: boolean;
   readyForPossession: boolean;
   bedroomsCount?: number | null;

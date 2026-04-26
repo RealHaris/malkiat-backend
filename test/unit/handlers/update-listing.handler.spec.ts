@@ -1,4 +1,6 @@
+import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Listing } from '@modules/listing-management/domain/listing.aggregate';
 import { UpdateListingHandler } from '@modules/listing-management/application/handlers/update-listing.handler';
 import { UpdateListingCommand } from '@modules/listing-management/application/commands/update-listing.command';
 import { DI } from '@app/di.tokens';
@@ -7,7 +9,11 @@ import type { ListingEventsPublisher } from '@modules/listing-management/applica
 import {
   mockListingRepository,
   mockListingEventsPublisher,
+  mockDrizzleDb,
+  mockAgencyRepository,
+  mockAgencyFindUserById,
 } from '@test/mocks/providers/command-bus.mock';
+import { minimalListingProps } from '@test/fixtures/minimal-listing';
 
 describe('UpdateListingHandler', () => {
   let handler: UpdateListingHandler;
@@ -17,6 +23,24 @@ describe('UpdateListingHandler', () => {
   beforeEach(async () => {
     mockRepo = mockListingRepository;
     mockPublisher = mockListingEventsPublisher;
+
+    mockRepo.findById.mockResolvedValue(
+      Listing.rehydrate(
+        minimalListingProps({
+          id: 'test-listing-id',
+          ownerId: 'test-owner-id',
+          status: 'DRAFT',
+        }),
+      ),
+    );
+
+    mockAgencyFindUserById.mockResolvedValue({
+      id: 'test-owner-id',
+      email: 'test@example.com',
+      name: 'Test',
+      platformRole: 'user',
+      isActive: true,
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -29,11 +53,36 @@ describe('UpdateListingHandler', () => {
           provide: DI.ListingEventsPublisher,
           useValue: mockPublisher,
         },
+        {
+          provide: DI.DrizzleDb,
+          useValue: mockDrizzleDb,
+        },
+        {
+          provide: DI.AgencyRepository,
+          useValue: mockAgencyRepository,
+        },
       ],
     }).compile();
 
     handler = module.get<UpdateListingHandler>(UpdateListingHandler);
     jest.clearAllMocks();
+
+    mockRepo.findById.mockResolvedValue(
+      Listing.rehydrate(
+        minimalListingProps({
+          id: 'test-listing-id',
+          ownerId: 'test-owner-id',
+          status: 'DRAFT',
+        }),
+      ),
+    );
+    mockAgencyFindUserById.mockResolvedValue({
+      id: 'test-owner-id',
+      email: 'test@example.com',
+      name: 'Test',
+      platformRole: 'user',
+      isActive: true,
+    });
   });
 
   describe('execute', () => {
@@ -49,12 +98,12 @@ describe('UpdateListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.update).toHaveBeenCalledTimes(1);
-      expect(mockPublisher.publish).toHaveBeenCalledTimes(1);
+      expect(mockRepo.update.mock.calls).toHaveLength(1);
+      expect(mockPublisher.publish.mock.calls).toHaveLength(1);
 
       const publishedEvents = mockPublisher.publish.mock.calls[0][0];
-      expect(publishedEvents).toHaveLength(2);
-      expect(publishedEvents[1]).toMatchObject({
+      expect(publishedEvents).toHaveLength(1);
+      expect(publishedEvents[0]).toMatchObject({
         type: 'ListingUpdated',
         listingId: 'test-listing-id',
         ownerId: 'test-owner-id',
@@ -62,6 +111,14 @@ describe('UpdateListingHandler', () => {
     });
 
     it('should update listing status when provided', async () => {
+      mockAgencyFindUserById.mockResolvedValue({
+        id: 'test-owner-id',
+        email: 'admin@example.com',
+        name: 'Admin',
+        platformRole: 'admin',
+        isActive: true,
+      });
+
       const payload = {
         id: 'test-listing-id',
         ownerId: 'test-owner-id',
@@ -72,20 +129,28 @@ describe('UpdateListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.update).toHaveBeenCalledTimes(1);
+      expect(mockRepo.update.mock.calls).toHaveLength(1);
       const updatedListing = mockRepo.update.mock.calls[0][0];
       expect(updatedListing.snapshot.status).toBe('PUBLISHED');
     });
 
     it('should update all provided fields', async () => {
+      mockAgencyFindUserById.mockResolvedValue({
+        id: 'test-owner-id',
+        email: 'admin@example.com',
+        name: 'Admin',
+        platformRole: 'admin',
+        isActive: true,
+      });
+
       const payload = {
         id: 'test-listing-id',
         ownerId: 'test-owner-id',
         title: 'New Title',
         description: 'New Description',
         priceAmount: 200000,
-        currency: 'USD',
-        propertyType: 'house',
+        currency: 'PKR' as const,
+        propertyCategory: 'PLOT' as const,
         status: 'PUBLISHED' as const,
       };
 
@@ -93,15 +158,15 @@ describe('UpdateListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.update).toHaveBeenCalledTimes(1);
+      expect(mockRepo.update.mock.calls).toHaveLength(1);
       const updatedListing = mockRepo.update.mock.calls[0][0];
       const snapshot = updatedListing.snapshot;
 
       expect(snapshot.title).toBe('New Title');
       expect(snapshot.description).toBe('New Description');
       expect(snapshot.priceAmount).toBe('200000');
-      expect(snapshot.currency).toBe('USD');
-      expect(snapshot.propertyType).toBe('house');
+      expect(snapshot.currency).toBe('PKR');
+      expect(snapshot.propertyCategory).toBe('PLOT');
       expect(snapshot.status).toBe('PUBLISHED');
       expect(snapshot.updatedAt).toBeInstanceOf(Date);
     });
@@ -118,7 +183,7 @@ describe('UpdateListingHandler', () => {
       const command = new UpdateListingCommand(payload);
 
       await expect(handler.execute(command)).rejects.toThrow('Database error');
-      expect(mockPublisher.publish).not.toHaveBeenCalled();
+      expect(mockPublisher.publish.mock.calls).toHaveLength(0);
     });
   });
 });

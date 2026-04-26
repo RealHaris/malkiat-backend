@@ -21,14 +21,41 @@ export const listingStatusEnum = pgEnum('listing_status', [
   'DRAFT',
   'UNDER_REVIEW',
   'PUBLISHED',
-  'ARCHIVED',
+  'UNPUBLISHED',
+  'DELETED',
 ]);
 export const listingPurposeEnum = pgEnum('listing_purpose', ['SELL', 'RENT']);
 export const propertyCategoryEnum = pgEnum('property_category', ['HOME', 'PLOT', 'COMMERCIAL']);
 export const areaUnitEnum = pgEnum('area_unit', ['MARLA', 'SQFT', 'SQYD', 'KANAL']);
 export const currencyEnum = pgEnum('listing_currency', ['PKR']);
 export const platformEnum = pgEnum('listing_platform', ['ZAMEEN']);
-export const amenityValueTypeEnum = pgEnum('amenity_value_type', ['boolean', 'text', 'number', 'select']);
+export const listingConditionEnum = pgEnum('listing_condition', [
+  'BRAND_NEW',
+  'EXCELLENT',
+  'GOOD',
+  'NEED_MINOR_WORK',
+  'NEED_MAJOR_WORK',
+]);
+export const amenityValueTypeEnum = pgEnum('amenity_value_type', [
+  'boolean',
+  'text',
+  'number',
+  'select',
+]);
+
+export const listingWeekdays = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+] as const;
+
+export type ListingAvailability = {
+  days: Array<(typeof listingWeekdays)[number]>;
+};
 
 export const propertySubtypes = pgTable(
   'property_subtypes',
@@ -67,7 +94,10 @@ export const amenities = pgTable('amenities', {
   category: varchar('category', { length: 120 }).default('Other Facilities').notNull(),
   subcategory: varchar('subcategory', { length: 120 }),
   valueType: amenityValueTypeEnum('value_type').default('boolean').notNull(),
-  valueOptions: jsonb('value_options').$type<string[]>().default(sql`'[]'::jsonb`).notNull(),
+  valueOptions: jsonb('value_options')
+    .$type<string[]>()
+    .default(sql`'[]'::jsonb`)
+    .notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -95,6 +125,7 @@ export const listings = pgTable('listings', {
     .notNull()
     .references(() => areas.id, { onDelete: 'restrict' }),
   locationText: text('location_text').notNull(),
+  googleMapsUrl: text('google_maps_url'),
   latitude: numeric('latitude', { precision: 10, scale: 7 }),
   longitude: numeric('longitude', { precision: 10, scale: 7 }),
   areaValue: numeric('area_value', { precision: 14, scale: 2 }).notNull(),
@@ -102,13 +133,21 @@ export const listings = pgTable('listings', {
   areaSqft: numeric('area_sqft', { precision: 14, scale: 2 }).notNull(),
   priceAmount: numeric('price_amount', { precision: 14, scale: 2 }).notNull(),
   currency: currencyEnum('currency').default('PKR').notNull(),
+  condition: listingConditionEnum('condition'),
+  availability: jsonb('availability').$type<ListingAvailability>(),
   installmentAvailable: boolean('installment_available').default(false).notNull(),
   readyForPossession: boolean('ready_for_possession').default(false).notNull(),
   bedroomsCount: smallint('bedrooms_count'),
   bathroomsCount: smallint('bathrooms_count'),
-  imagesJson: jsonb('images_json').$type<string[]>().default(sql`'[]'::jsonb`).notNull(),
+  imagesJson: jsonb('images_json')
+    .$type<string[]>()
+    .default(sql`'[]'::jsonb`)
+    .notNull(),
   videoUrl: text('video_url'),
-  platforms: platformEnum('platforms').array().default(sql`ARRAY['ZAMEEN']::listing_platform[]`).notNull(),
+  platforms: platformEnum('platforms')
+    .array()
+    .default(sql`ARRAY['ZAMEEN']::listing_platform[]`)
+    .notNull(),
   status: listingStatusEnum('status').default('DRAFT').notNull(),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -127,7 +166,9 @@ export const listingAmenities = pgTable(
     valueJson: jsonb('value_json').$type<string | number | boolean | null>(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.listingId, table.amenityId], name: 'listing_amenities_pk' })],
+  (table) => [
+    primaryKey({ columns: [table.listingId, table.amenityId], name: 'listing_amenities_pk' }),
+  ],
 );
 
 export const cityDefaults = {
@@ -142,6 +183,9 @@ export const areaUnitSqftFactor: Record<(typeof areaUnitEnum.enumValues)[number]
   KANAL: 5445,
 };
 
-export function toSqft(areaValue: number, areaUnit: (typeof areaUnitEnum.enumValues)[number]): number {
+export function toSqft(
+  areaValue: number,
+  areaUnit: (typeof areaUnitEnum.enumValues)[number],
+): number {
   return Number((areaValue * areaUnitSqftFactor[areaUnit]).toFixed(2));
 }

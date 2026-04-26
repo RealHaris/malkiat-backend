@@ -1,3 +1,4 @@
+import { beforeAll, beforeEach, afterAll, describe, expect, it, jest } from '@jest/globals';
 import { Controller, Get, Query } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -16,16 +17,13 @@ class MockPublicListingsController {
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
-    @Query('propertyType') propertyType?: string,
-    @Query('currency') currency?: string,
   ) {
     return this.queryBus.execute(
       new DiscoverListingsQuery({
+        city: 'Karachi',
         page: page ? Number(page) : undefined,
         perPage: perPage ? Number(perPage) : undefined,
-        sort: sort as any,
-        propertyType,
-        currency,
+        sort: sort as 'newest' | 'price_asc' | 'price_desc' | undefined,
       }),
     );
   }
@@ -36,19 +34,16 @@ class MockPublicListingsController {
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
-    @Query('propertyType') propertyType?: string,
-    @Query('currency') currency?: string,
     @Query('minPrice') minPrice?: string,
     @Query('maxPrice') maxPrice?: string,
   ) {
     return this.queryBus.execute(
       new SearchListingsQuery({
         q,
+        city: 'Karachi',
         page: page ? Number(page) : undefined,
         perPage: perPage ? Number(perPage) : undefined,
-        sort: sort as any,
-        propertyType,
-        currency,
+        sort: sort as 'relevance' | 'newest' | 'price_asc' | 'price_desc' | undefined,
         minPrice: minPrice ? Number(minPrice) : undefined,
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
       }),
@@ -58,16 +53,18 @@ class MockPublicListingsController {
 
 describe('PublicListingsController (e2e)', () => {
   let app: INestApplication;
-  let queryBus: QueryBus;
+  let queryBusExecute: jest.MockedFunction<(command: unknown) => Promise<unknown>>;
 
   beforeAll(async () => {
+    queryBusExecute = jest.fn();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [MockPublicListingsController],
       providers: [
         {
           provide: QueryBus,
           useValue: {
-            execute: jest.fn(),
+            execute: queryBusExecute,
           },
         },
       ],
@@ -82,8 +79,6 @@ describe('PublicListingsController (e2e)', () => {
       }),
     );
     await app.init();
-
-    queryBus = moduleFixture.get<QueryBus>(QueryBus);
   });
 
   afterAll(async () => {
@@ -97,7 +92,7 @@ describe('PublicListingsController (e2e)', () => {
     ]);
 
     beforeEach(() => {
-      (queryBus.execute as jest.Mock).mockResolvedValue(mockResult);
+      queryBusExecute.mockResolvedValue(mockResult);
     });
 
     it('should return paginated listings with default values', async () => {
@@ -105,9 +100,13 @@ describe('PublicListingsController (e2e)', () => {
         .get('/public/listings/discovery')
         .expect(200);
 
-      expect(response.body).toHaveProperty('data');
-      expect(response.body).toHaveProperty('meta');
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(DiscoverListingsQuery));
+      expect(response.body).toMatchObject({
+        items: expect.any(Array),
+        found: 2,
+        page: 1,
+        perPage: 20,
+      });
+      expect(queryBusExecute).toHaveBeenCalledWith(expect.any(DiscoverListingsQuery));
     });
 
     it('should handle page parameter', async () => {
@@ -116,7 +115,7 @@ describe('PublicListingsController (e2e)', () => {
         .expect(200);
 
       expect(response.status).toBe(200);
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(DiscoverListingsQuery));
+      expect(queryBusExecute).toHaveBeenCalledWith(expect.any(DiscoverListingsQuery));
     });
 
     it('should handle perPage parameter', async () => {
@@ -137,17 +136,17 @@ describe('PublicListingsController (e2e)', () => {
       }
     });
 
-    it('should handle propertyType filter', async () => {
+    it('should handle propertyCategory filter', async () => {
       const response = await request(app.getHttpServer())
-        .get('/public/listings/discovery?propertyType=apartment')
+        .get('/public/listings/discovery?propertyCategory=HOME')
         .expect(200);
 
       expect(response.status).toBe(200);
     });
 
-    it('should handle currency filter', async () => {
+    it('should handle includeLocations filter', async () => {
       const response = await request(app.getHttpServer())
-        .get('/public/listings/discovery?currency=PKR')
+        .get('/public/listings/discovery?includeLocations=Clifton')
         .expect(200);
 
       expect(response.status).toBe(200);
@@ -156,7 +155,7 @@ describe('PublicListingsController (e2e)', () => {
     it('should handle multiple query parameters', async () => {
       const response = await request(app.getHttpServer())
         .get(
-          '/public/listings/discovery?page=2&perPage=15&sort=newest&propertyType=house&currency=USD',
+          '/public/listings/discovery?page=2&perPage=15&sort=newest&propertyCategory=HOME&minPrice=1000000&maxPrice=50000000',
         )
         .expect(200);
 
@@ -165,19 +164,18 @@ describe('PublicListingsController (e2e)', () => {
 
     it('should return empty results when no listings found', async () => {
       const emptyResult = createMockPaginatedResult([], 0, 1, 20);
-      (queryBus.execute as jest.Mock).mockResolvedValueOnce(emptyResult);
+      queryBusExecute.mockResolvedValueOnce(emptyResult);
 
       const response = await request(app.getHttpServer())
         .get('/public/listings/discovery')
         .expect(200);
 
-      expect(response.body.data).toEqual([]);
+      expect(response.body.items).toEqual([]);
+      expect(response.body.found).toBe(0);
     });
 
     it('should handle query bus errors', async () => {
-      (queryBus.execute as jest.Mock).mockRejectedValueOnce(
-        new Error('Search service unavailable'),
-      );
+      queryBusExecute.mockRejectedValueOnce(new Error('Search service unavailable'));
 
       const response = await request(app.getHttpServer())
         .get('/public/listings/discovery')
@@ -191,7 +189,7 @@ describe('PublicListingsController (e2e)', () => {
     const mockResult = createMockPaginatedResult([createMockListingCard()]);
 
     beforeEach(() => {
-      (queryBus.execute as jest.Mock).mockResolvedValue(mockResult);
+      queryBusExecute.mockResolvedValue(mockResult);
     });
 
     it('should return search results with empty query', async () => {
@@ -199,8 +197,13 @@ describe('PublicListingsController (e2e)', () => {
         .get('/public/listings/search?q=')
         .expect(200);
 
-      expect(response.body).toHaveProperty('data');
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(SearchListingsQuery));
+      expect(response.body).toMatchObject({
+        items: expect.any(Array),
+        found: 1,
+        page: 1,
+        perPage: 20,
+      });
+      expect(queryBusExecute).toHaveBeenCalledWith(expect.any(SearchListingsQuery));
     });
 
     it('should return search results with query term', async () => {
@@ -209,7 +212,7 @@ describe('PublicListingsController (e2e)', () => {
         .expect(200);
 
       expect(response.status).toBe(200);
-      expect(queryBus.execute).toHaveBeenCalledWith(expect.any(SearchListingsQuery));
+      expect(queryBusExecute).toHaveBeenCalledWith(expect.any(SearchListingsQuery));
     });
 
     it('should handle page parameter', async () => {
@@ -238,17 +241,17 @@ describe('PublicListingsController (e2e)', () => {
       }
     });
 
-    it('should handle propertyType filter', async () => {
+    it('should handle propertyCategory filter', async () => {
       const response = await request(app.getHttpServer())
-        .get('/public/listings/search?q=test&propertyType=villa')
+        .get('/public/listings/search?q=test&propertyCategory=PLOT')
         .expect(200);
 
       expect(response.status).toBe(200);
     });
 
-    it('should handle currency filter', async () => {
+    it('should handle propertySubtype label filter', async () => {
       const response = await request(app.getHttpServer())
-        .get('/public/listings/search?q=test&currency=USD')
+        .get('/public/listings/search?q=test&propertyCategory=HOME&propertySubtype=House')
         .expect(200);
 
       expect(response.status).toBe(200);
@@ -281,7 +284,7 @@ describe('PublicListingsController (e2e)', () => {
     it('should handle multiple query parameters', async () => {
       const response = await request(app.getHttpServer())
         .get(
-          '/public/listings/search?q=modern%20apartment&page=2&perPage=15&sort=price_asc&propertyType=apartment&currency=PKR&minPrice=3000000&maxPrice=7000000',
+          '/public/listings/search?q=modern%20apartment&page=2&perPage=15&sort=price_asc&propertyCategory=HOME&minPrice=3000000&maxPrice=7000000',
         )
         .expect(200);
 
@@ -290,19 +293,18 @@ describe('PublicListingsController (e2e)', () => {
 
     it('should return empty results when no matches found', async () => {
       const emptyResult = createMockPaginatedResult([], 0, 1, 20);
-      (queryBus.execute as jest.Mock).mockResolvedValueOnce(emptyResult);
+      queryBusExecute.mockResolvedValueOnce(emptyResult);
 
       const response = await request(app.getHttpServer())
         .get('/public/listings/search?q=nonexistent')
         .expect(200);
 
-      expect(response.body.data).toEqual([]);
+      expect(response.body.items).toEqual([]);
+      expect(response.body.found).toBe(0);
     });
 
     it('should handle query bus errors', async () => {
-      (queryBus.execute as jest.Mock).mockRejectedValueOnce(
-        new Error('Search service unavailable'),
-      );
+      queryBusExecute.mockRejectedValueOnce(new Error('Search service unavailable'));
 
       const response = await request(app.getHttpServer())
         .get('/public/listings/search?q=test')
@@ -380,17 +382,17 @@ describe('PublicListingsController (e2e)', () => {
       expect(response.status).toBe(200);
     });
 
-    it('should handle special characters in propertyType', async () => {
+    it('should handle comma-separated includeLocations', async () => {
       const response = await request(app.getHttpServer())
-        .get('/public/listings/discovery?propertyType=mixed-use')
+        .get('/public/listings/discovery?includeLocations=Clifton,DHA')
         .expect(200);
 
       expect(response.status).toBe(200);
     });
 
-    it('should handle currency codes with special characters', async () => {
+    it('should handle minAreaSqyd filter', async () => {
       const response = await request(app.getHttpServer())
-        .get('/public/listings/discovery?currency=USD')
+        .get('/public/listings/discovery?minAreaSqyd=100')
         .expect(200);
 
       expect(response.status).toBe(200);

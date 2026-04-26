@@ -1,1 +1,1 @@
-export type ListingStatus = 'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'ARCHIVED';
+export type ListingStatus = 'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'UNPUBLISHED' | 'DELETED';
