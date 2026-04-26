@@ -82,7 +82,7 @@ jobs:
               "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin \($reg)",
               "export ECR_IMAGE_URI=\($img)",
               "docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --remove-orphans",
-              "curl -fsS --retry 30 --retry-delay 2 --retry-connrefused http://localhost:3000/users/public >/dev/null || { echo api-healthcheck-failed; docker compose -f docker-compose.prod.yml --env-file .env.prod ps; docker compose -f docker-compose.prod.yml --env-file .env.prod logs --tail=200 api || true; docker compose -f docker-compose.prod.yml --env-file .env.prod logs --tail=200 worker || true; exit 1; }"
+              "curl -fsS --retry 45 --retry-delay 2 --retry-connrefused --retry-all-errors --connect-timeout 2 --max-time 5 http://localhost:3000/users/public >/dev/null || { echo api-healthcheck-failed; docker compose -f docker-compose.prod.yml --env-file .env.prod ps; docker compose -f docker-compose.prod.yml --env-file .env.prod logs --tail=200 api || true; docker compose -f docker-compose.prod.yml --env-file .env.prod logs --tail=200 worker || true; exit 1; }"
             ]')
           jq -nc --argjson commands "$COMMANDS_JSON" '{commands:$commands}' > .ssm-deploy-parameters.json
 
