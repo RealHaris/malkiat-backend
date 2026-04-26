@@ -164,7 +164,7 @@ export function createBetterAuthInstance(
             'email-verification': 'Verify your email — Malkiat',
             'forget-password': 'Reset your password — Malkiat',
           };
-          resend.emails.send({
+          await resend.emails.send({
             from: env.RESEND_FROM_EMAIL,
             to: email,
             subject: subjects[type] ?? 'Your verification code — Malkiat',

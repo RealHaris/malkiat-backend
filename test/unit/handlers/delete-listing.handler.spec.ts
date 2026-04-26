@@ -91,8 +91,8 @@ describe('DeleteListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.update).toHaveBeenCalledTimes(1);
-      expect(mockPublisher.publish).toHaveBeenCalledTimes(1);
+      expect(mockRepo.update.mock.calls).toHaveLength(1);
+      expect(mockPublisher.publish.mock.calls).toHaveLength(1);
 
       const publishedEvents = mockPublisher.publish.mock.calls[0][0];
       expect(publishedEvents).toHaveLength(1);
@@ -117,7 +117,7 @@ describe('DeleteListingHandler', () => {
       const command = new DeleteListingCommand(payload);
 
       await expect(handler.execute(command)).rejects.toThrow('Database error');
-      expect(mockPublisher.publish).not.toHaveBeenCalled();
+      expect(mockPublisher.publish.mock.calls).toHaveLength(0);
     });
 
     it('should not publish events if repository update fails', async () => {
@@ -131,7 +131,7 @@ describe('DeleteListingHandler', () => {
       const command = new DeleteListingCommand(payload);
 
       await expect(handler.execute(command)).rejects.toThrow('Connection failed');
-      expect(mockPublisher.publish).not.toHaveBeenCalled();
+      expect(mockPublisher.publish.mock.calls).toHaveLength(0);
     });
   });
 });
