@@ -1,9 +1,10 @@
 {
-  "typescript.experimental.useTsgo": true,
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "oxc.oxc-vscode",
+  "oxc.typeAware": true,
+  "oxc.tsConfigPath": "tsconfig.json",
   "editor.codeActionsOnSave": {
-    "source.fixAll.oxlint": "explicit"
+    "source.fixAll.oxlint": "always"
   },
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"

@@ -9,6 +9,7 @@ import { PublicAreasController } from './presentation/public-areas.controller';
 import { PublicListingMetadataController } from './presentation/public-listing-metadata.controller';
 import { DiscoverListingsHandler } from './application/handlers/discover-listings.handler';
 import { SearchListingsHandler } from './application/handlers/search-listings.handler';
+import { PublicListingQueryResolver } from './application/public-listing-query.resolver';
 
 const queryHandlers = [DiscoverListingsHandler, SearchListingsHandler];
 
@@ -16,6 +17,7 @@ const queryHandlers = [DiscoverListingsHandler, SearchListingsHandler];
   imports: [CqrsModule],
   controllers: [PublicListingsController, PublicAreasController, PublicListingMetadataController],
   providers: [
+    PublicListingQueryResolver,
     ...queryHandlers,
     {
       provide: DI.ListingRepository,

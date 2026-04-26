@@ -1,36 +1,32 @@
 import { Listing } from '@modules/listing-management/domain/listing.aggregate';
 
+import { minimalListingCreateInput } from '@test/fixtures/minimal-listing';
+
 describe('Listing Aggregate', () => {
   describe('create', () => {
     it('should create a new listing with default DRAFT status', () => {
-      const listing = Listing.create({
+      const listing = Listing.create(minimalListingCreateInput());
+
+      expect(listing.snapshot).toMatchObject({
         id: 'test-listing-id',
         ownerId: 'test-owner-id',
         title: 'Test Listing',
         priceAmount: '100000',
         currency: 'PKR',
-      });
-
-      expect(listing.snapshot).toMatchObject({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
         status: 'DRAFT',
       });
     });
 
-    it('should create a listing with all fields', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        description: 'Test Description',
-        priceAmount: '100000',
-        currency: 'USD',
-        propertyType: 'apartment',
-        status: 'PUBLISHED',
-      });
+    it('should create a listing with all core fields', () => {
+      const listing = Listing.create(
+        minimalListingCreateInput({
+          title: 'Test Listing',
+          description: 'Test Description',
+          status: 'PUBLISHED',
+          purpose: 'RENT',
+          propertyCategory: 'PLOT',
+        }),
+      );
 
       expect(listing.snapshot).toMatchObject({
         id: 'test-listing-id',
@@ -38,20 +34,15 @@ describe('Listing Aggregate', () => {
         title: 'Test Listing',
         description: 'Test Description',
         priceAmount: '100000',
-        currency: 'USD',
-        propertyType: 'apartment',
+        currency: 'PKR',
+        purpose: 'RENT',
+        propertyCategory: 'PLOT',
         status: 'PUBLISHED',
       });
     });
 
     it('should generate ListingCreated domain event', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       const events = listing.pullDomainEvents();
 
@@ -64,40 +55,29 @@ describe('Listing Aggregate', () => {
     });
 
     it('should use provided status if given', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-        status: 'PUBLISHED',
-      });
+      const listing = Listing.create(
+        minimalListingCreateInput({
+          status: 'PUBLISHED',
+        }),
+      );
 
       expect(listing.snapshot.status).toBe('PUBLISHED');
     });
 
-    it('should have undefined currency if not provided', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+    it('should default currency to PKR', () => {
+      const listing = Listing.create(minimalListingCreateInput());
 
-      expect(listing.snapshot.currency).toBeUndefined();
+      expect(listing.snapshot.currency).toBe('PKR');
     });
   });
 
   describe('update', () => {
     it('should update listing fields', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Original Title',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(
+        minimalListingCreateInput({
+          title: 'Original Title',
+        }),
+      );
 
       listing.update({
         title: 'Updated Title',
@@ -111,56 +91,32 @@ describe('Listing Aggregate', () => {
     });
 
     it('should update listing status', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-        status: 'DRAFT',
-      });
+      const listing = Listing.create(minimalListingCreateInput({ status: 'DRAFT' }));
 
       listing.update({ status: 'PUBLISHED' });
 
       expect(listing.snapshot.status).toBe('PUBLISHED');
     });
 
-    it('should update currency', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'USD',
-      });
+    it('should keep PKR when updating other scalar fields', () => {
+      const listing = Listing.create(minimalListingCreateInput());
 
-      listing.update({ currency: 'USD' });
+      listing.update({ title: 'Renamed' });
 
-      expect(listing.snapshot.currency).toBe('USD');
+      expect(listing.snapshot.currency).toBe('PKR');
+      expect(listing.snapshot.title).toBe('Renamed');
     });
 
-    it('should update propertyType', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+    it('should update propertyCategory', () => {
+      const listing = Listing.create(minimalListingCreateInput());
 
-      listing.update({ propertyType: 'house' });
+      listing.update({ propertyCategory: 'PLOT' });
 
-      expect(listing.snapshot.propertyType).toBe('house');
+      expect(listing.snapshot.propertyCategory).toBe('PLOT');
     });
 
     it('should update priceAmount', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       listing.update({ priceAmount: '150000' });
 
@@ -168,13 +124,7 @@ describe('Listing Aggregate', () => {
     });
 
     it('should set updatedAt timestamp', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       const beforeUpdate = listing.snapshot.updatedAt;
       listing.update({ title: 'Updated' });
@@ -187,13 +137,7 @@ describe('Listing Aggregate', () => {
     });
 
     it('should allow updating id', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       listing.update({ id: 'new-id' } as any);
 
@@ -201,13 +145,7 @@ describe('Listing Aggregate', () => {
     });
 
     it('should allow updating ownerId', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       listing.update({ ownerId: 'new-owner-id' } as any);
 
@@ -215,13 +153,7 @@ describe('Listing Aggregate', () => {
     });
 
     it('should generate ListingUpdated domain event', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       listing.pullDomainEvents();
 
@@ -238,20 +170,17 @@ describe('Listing Aggregate', () => {
     });
 
     it('should update multiple fields at once', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Original Title',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(
+        minimalListingCreateInput({
+          title: 'Original Title',
+        }),
+      );
 
       listing.update({
         title: 'New Title',
         description: 'New Description',
         priceAmount: '200000',
-        currency: 'USD',
-        propertyType: 'villa',
+        propertyCategory: 'COMMERCIAL',
         status: 'PUBLISHED',
       });
 
@@ -259,8 +188,8 @@ describe('Listing Aggregate', () => {
         title: 'New Title',
         description: 'New Description',
         priceAmount: '200000',
-        currency: 'USD',
-        propertyType: 'villa',
+        currency: 'PKR',
+        propertyCategory: 'COMMERCIAL',
         status: 'PUBLISHED',
       });
     });
@@ -268,13 +197,7 @@ describe('Listing Aggregate', () => {
 
   describe('markDeleted', () => {
     it('should generate ListingDeleted domain event', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       listing.pullDomainEvents();
 
@@ -291,13 +214,7 @@ describe('Listing Aggregate', () => {
     });
 
     it('should not modify listing state', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       const beforeSnapshot = { ...listing.snapshot };
       listing.markDeleted();
@@ -308,13 +225,7 @@ describe('Listing Aggregate', () => {
 
   describe('pullDomainEvents', () => {
     it('should return all domain events and clear them', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       const firstEvents = listing.pullDomainEvents();
       expect(firstEvents).toHaveLength(1);
@@ -324,13 +235,7 @@ describe('Listing Aggregate', () => {
     });
 
     it('should accumulate multiple events', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       listing.update({ title: 'Updated' });
       listing.markDeleted();
@@ -346,13 +251,7 @@ describe('Listing Aggregate', () => {
 
   describe('snapshot', () => {
     it('should return a copy of listing properties', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       const snapshot = listing.snapshot;
 
@@ -365,13 +264,7 @@ describe('Listing Aggregate', () => {
     });
 
     it('should return immutable snapshot', () => {
-      const listing = Listing.create({
-        id: 'test-listing-id',
-        ownerId: 'test-owner-id',
-        title: 'Test Listing',
-        priceAmount: '100000',
-        currency: 'PKR',
-      });
+      const listing = Listing.create(minimalListingCreateInput());
 
       const snapshot = listing.snapshot;
       snapshot.title = 'Modified';

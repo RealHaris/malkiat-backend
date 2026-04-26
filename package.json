@@ -17,15 +17,16 @@
     "start:dev": "tsgo -p tsconfig.tsgo.json --noEmit & nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
-    "start:worker:dev": "ts-node -r tsconfig-paths/register src/worker-main.ts",
+    "start:worker:dev": "TS_NODE_PROJECT=tsconfig.deploy.json ts-node -r tsconfig-paths/register src/worker-main.ts",
     "start:worker": "node dist/src/worker-main.js",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test": "node ./node_modules/jest/bin/jest.js",
+    "test:watch": "node ./node_modules/jest/bin/jest.js --watch",
+    "test:cov": "node ./node_modules/jest/bin/jest.js --coverage",
+    "test:debug": "TS_NODE_PROJECT=tsconfig.deploy.json node --inspect-brk -r tsconfig-paths/register -r ts-node/register ./node_modules/jest/bin/jest.js --runInBand",
+    "test:e2e": "node ./node_modules/jest/bin/jest.js --config ./test/jest-e2e.json",
+    "test:all": "node ./node_modules/jest/bin/jest.js && node ./node_modules/jest/bin/jest.js --config ./test/jest-e2e.json",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -72,6 +73,8 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "@typescript/native-preview": "^7.0.0-dev.20260123.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
     "drizzle-kit": "^0.31.4",
     "jest": "^30.0.0",
     "oxfmt": "^0.44.0",
@@ -104,12 +107,16 @@
       "<rootDir>/test/unit"
     ],
     "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
       "^@app/(.*)$": "<rootDir>/src/app/$1",
       "^@shared/(.*)$": "<rootDir>/src/shared/$1",
       "^@infra/(.*)$": "<rootDir>/src/infrastructure/$1",
       "^@modules/(.*)$": "<rootDir>/src/modules/$1",
       "^@worker/(.*)$": "<rootDir>/src/worker/$1",
       "^@test/(.*)$": "<rootDir>/test/$1"
-    }
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@thallesp/|better-auth|better-call)/)"
+    ]
   }
 }
