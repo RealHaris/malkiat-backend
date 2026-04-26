@@ -1,4 +1,9 @@
+import { jest } from '@jest/globals';
 import { BadRequestException } from '@nestjs/common';
+
+jest.mock('@thallesp/nestjs-better-auth', () => ({
+  Session: () => (_target: object, _key: string | symbol | undefined, _index: number) => undefined,
+}));
 
 import { UploadsController } from '@modules/uploads/uploads.controller';
 import type { UploadItem } from '@modules/uploads/uploads.types';
@@ -9,7 +14,7 @@ describe('UploadsController', () => {
   } as any;
 
   let controller: UploadsController;
-  let uploadsService: { uploadFile: jest.Mock<Promise<UploadItem>, [any]> };
+  let uploadsService: { uploadFile: jest.MockedFunction<(input: unknown) => Promise<UploadItem>> };
 
   beforeEach(() => {
     uploadsService = {

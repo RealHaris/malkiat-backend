@@ -4,6 +4,7 @@ export class SearchListingsQuery {
       q?: string;
       city: string;
       areaIds?: string[];
+      excludeAreaIds?: string[];
       purpose?: 'SELL' | 'RENT';
       propertyCategory?: 'HOME' | 'PLOT' | 'COMMERCIAL';
       propertySubtypeId?: string;

@@ -3,7 +3,11 @@ import { DiscoverListingsHandler } from '@modules/listing-discovery/application/
 import { DiscoverListingsQuery } from '@modules/listing-discovery/application/queries/discover-listings.query';
 import { DI } from '@app/di.tokens';
 import { APP_ENV } from '@shared/config/config.constants';
-import { mockTypesenseClient, mockAppEnv } from '@test/mocks/providers/command-bus.mock';
+import {
+  mockTypesenseClient,
+  mockAppEnv,
+  mockTypesenseListingsDocumentSearch,
+} from '@test/mocks/providers/command-bus.mock';
 
 describe('DiscoverListingsHandler', () => {
   let handler: DiscoverListingsHandler;
@@ -32,73 +36,77 @@ describe('DiscoverListingsHandler', () => {
 
   describe('execute', () => {
     it('should discover listings with default pagination', async () => {
-      const query = new DiscoverListingsQuery({});
+      const query = new DiscoverListingsQuery({ city: 'Karachi' });
 
       await handler.execute(query);
 
-      expect(mockTypesense.search).toHaveBeenCalled();
+      expect(mockTypesenseListingsDocumentSearch).toHaveBeenCalled();
     });
 
     it('should use provided page and perPage parameters', async () => {
       const query = new DiscoverListingsQuery({
+        city: 'Karachi',
         page: 2,
         perPage: 10,
       });
 
       await handler.execute(query);
 
-      expect(mockTypesense.search).toHaveBeenCalled();
+      expect(mockTypesenseListingsDocumentSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 2, per_page: 10 }),
+      );
     });
 
-    it('should apply propertyType filter when provided', async () => {
+    it('should forward minPrice and maxPrice to Typesense filter_by', async () => {
       const query = new DiscoverListingsQuery({
-        propertyType: 'apartment',
+        city: 'Karachi',
+        minPrice: 1_000_000,
+        maxPrice: 100_000_000,
       });
 
       await handler.execute(query);
 
-      expect(mockTypesense.search).toHaveBeenCalled();
-    });
-
-    it('should apply currency filter when provided', async () => {
-      const query = new DiscoverListingsQuery({
-        currency: 'PKR',
-      });
-
-      await handler.execute(query);
-
-      expect(mockTypesense.search).toHaveBeenCalled();
+      expect(mockTypesenseListingsDocumentSearch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          filter_by: expect.stringContaining('priceAmount:>=1000000'),
+        }),
+      );
+      const call = mockTypesenseListingsDocumentSearch.mock.calls[0][0] as { filter_by: string };
+      expect(call.filter_by).toContain('priceAmount:<=100000000');
     });
 
     it('should apply sorting when provided', async () => {
       const sortOptions = ['newest', 'price_asc', 'price_desc'] as const;
 
       for (const sort of sortOptions) {
-        const query = new DiscoverListingsQuery({ sort });
+        const query = new DiscoverListingsQuery({ city: 'Karachi', sort });
         await handler.execute(query);
       }
 
-      expect(mockTypesense.search).toHaveBeenCalledTimes(3);
+      expect(mockTypesenseListingsDocumentSearch).toHaveBeenCalledTimes(3);
     });
 
-    it('should combine all filters correctly', async () => {
+    it('should combine pagination, sort, and price filters', async () => {
       const query = new DiscoverListingsQuery({
+        city: 'Karachi',
         page: 3,
         perPage: 15,
         sort: 'price_asc',
-        propertyType: 'house',
-        currency: 'USD',
+        minPrice: 5_000_000,
+        maxPrice: 50_000_000,
       });
 
       await handler.execute(query);
 
-      expect(mockTypesense.search).toHaveBeenCalled();
+      const call = mockTypesenseListingsDocumentSearch.mock.calls[0][0] as { filter_by: string };
+      expect(call.filter_by).toContain('priceAmount:>=5000000');
+      expect(call.filter_by).toContain('priceAmount:<=50000000');
     });
 
     it('should handle search service errors gracefully', async () => {
       mockTypesense.search.mockRejectedValueOnce(new Error('Search service unavailable'));
 
-      const query = new DiscoverListingsQuery({});
+      const query = new DiscoverListingsQuery({ city: 'Karachi' });
 
       await expect(handler.execute(query)).rejects.toThrow('Search service unavailable');
     });

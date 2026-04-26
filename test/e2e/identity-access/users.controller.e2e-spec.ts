@@ -1,4 +1,6 @@
-import { Controller, Get, Session } from '@nestjs/common';
+/// <reference types="jest" />
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+import { Controller, Get, Headers } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 const request = require('supertest');
@@ -7,8 +9,16 @@ import type { UserSession } from '@thallesp/nestjs-better-auth';
 @Controller('users')
 class MockUsersController {
   @Get('me')
-  me(@Session() session?: UserSession) {
-    return { user: session?.user };
+  me(@Headers('x-session') raw?: string) {
+    if (!raw) {
+      return { user: undefined };
+    }
+    try {
+      const session = JSON.parse(raw) as UserSession;
+      return { user: session.user };
+    } catch {
+      return { user: undefined };
+    }
   }
 
   @Get('public')
@@ -17,8 +27,16 @@ class MockUsersController {
   }
 
   @Get('optional')
-  optional(@Session() session?: UserSession) {
-    return { authenticated: !!session };
+  optional(@Headers('x-session') raw?: string) {
+    if (!raw) {
+      return { authenticated: false };
+    }
+    try {
+      const session = JSON.parse(raw) as UserSession;
+      return { authenticated: !!session?.user };
+    } catch {
+      return { authenticated: false };
+    }
   }
 }
 
@@ -106,6 +124,7 @@ describe('UsersController (e2e)', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('user');
+      expect(response.body.user).toMatchObject({ id: 'test-user-id' });
     });
 
     it('should handle missing session gracefully', async () => {

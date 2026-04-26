@@ -1,14 +1,29 @@
 import type { ListingProps } from '@modules/listing-management/domain/listing.aggregate';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
 
+export const MOCK_SUBTYPE_ID = '00000000-0000-4000-8000-000000000099';
+export const MOCK_AREA_ID = '00000000-0000-4000-8000-000000000088';
+
 export const createMockListing = (overrides: Partial<ListingProps> = {}): ListingProps => ({
   id: generateMockId(),
   ownerId: generateMockId(),
   title: 'Beautiful Modern Apartment',
   description: 'A stunning apartment in the heart of the city',
+  purpose: 'SELL',
+  propertyCategory: 'HOME',
+  propertySubtypeId: MOCK_SUBTYPE_ID,
+  city: 'Karachi',
+  areaId: MOCK_AREA_ID,
+  locationText: 'Test Area, Karachi',
+  areaValue: '5',
+  areaUnit: 'MARLA',
+  areaSqft: '1125',
   priceAmount: '5000000',
   currency: 'PKR',
-  propertyType: 'apartment',
+  installmentAvailable: false,
+  readyForPossession: false,
+  imagesJson: [],
+  platforms: ['ZAMEEN'],
   status: 'DRAFT',
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -39,43 +54,49 @@ export const createMockUser = (overrides: Partial<UserSession> = {}): UserSessio
   ...overrides,
 });
 
-export const createMockPaginatedResult = <T>(
-  items: T[] = [],
-  total: number = items.length,
-  page: number = 1,
-  perPage: number = 20,
-) => ({
-  data: items,
-  meta: {
-    total,
-    page,
-    perPage,
-    totalPages: Math.ceil(total / perPage),
-  },
-});
+function generateMockId(): string {
+  return `mock-${Math.random().toString(36).slice(2, 11)}`;
+}
 
 export const createMockListingCard = () => ({
   id: generateMockId(),
-  title: 'Beautiful Modern Apartment',
-  description: 'A stunning apartment in the heart of the city',
-  priceAmount: '5000000',
-  currency: 'PKR',
-  propertyType: 'apartment',
-  status: 'DRAFT' as const,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  ownerId: generateMockId(),
+  title: 'Test Listing',
+  description: null,
+  purpose: 'SELL' as const,
+  propertyCategory: 'HOME' as const,
+  propertySubtypeId: MOCK_SUBTYPE_ID,
+  city: 'Karachi',
+  areaId: MOCK_AREA_ID,
+  locationText: 'Test',
+  googleMapsUrl: null,
+  areaValue: 5,
+  areaUnit: 'MARLA' as const,
+  areaSqft: 1125,
+  priceAmount: 5000000,
+  currency: 'PKR' as const,
+  condition: null,
+  availability: null,
+  installmentAvailable: false,
+  readyForPossession: false,
+  bedroomsCount: 2,
+  bathroomsCount: 2,
+  imagesJson: [],
+  videoUrl: null,
+  platforms: ['ZAMEEN'],
+  status: 'PUBLISHED',
+  publishedAt: null,
+  createdAt: Date.now(),
 });
 
-export const createMockDomainEvent = (
-  type: 'ListingCreated' | 'ListingUpdated' | 'ListingDeleted',
-  listingId: string = generateMockId(),
-  ownerId: string = generateMockId(),
+export const createMockPaginatedResult = <T>(
+  items: T[],
+  found?: number,
+  page?: number,
+  perPage?: number,
 ) => ({
-  type,
-  listingId,
-  ownerId,
+  items,
+  page: page ?? 1,
+  perPage: perPage ?? 20,
+  found: found !== undefined ? found : items.length,
 });
-
-function generateMockId(): string {
-  return `mock-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-}

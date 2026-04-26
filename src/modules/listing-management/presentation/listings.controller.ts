@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
+import { Session, type UserSession, AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { Inject } from '@nestjs/common';
 
@@ -185,14 +185,12 @@ export class ListingsController {
   @ApiOperation(API_OPERATIONS.GET_LISTING_BY_ID)
   @ApiResponse(API_RESPONSES.RETRIEVED('Listing'))
   @ApiResponse(API_RESPONSES.NOT_FOUND('Listing'))
-  @ApiHeader(API_HEADERS.AUTHORIZATION)
-  async byId(@Session() session: UserSession, @Param('id') id: string) {
+  @AllowAnonymous()
+  async byId(@Param('id') id: string) {
     const listing = await this.listingRepo.findById(id);
-    if (!listing) {
+    if (!listing || listing.snapshot.status !== 'PUBLISHED') {
       throw new NotFoundException('Listing not found');
     }
-
-    await this.assertCanManageListing(session.user.id, listing.snapshot);
 
     return { item: listing.snapshot };
   }

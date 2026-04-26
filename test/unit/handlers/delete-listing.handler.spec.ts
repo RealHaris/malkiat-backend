@@ -1,4 +1,6 @@
+import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Listing } from '@modules/listing-management/domain/listing.aggregate';
 import { DeleteListingHandler } from '@modules/listing-management/application/handlers/delete-listing.handler';
 import { DeleteListingCommand } from '@modules/listing-management/application/commands/delete-listing.command';
 import { DI } from '@app/di.tokens';
@@ -7,7 +9,10 @@ import type { ListingEventsPublisher } from '@modules/listing-management/applica
 import {
   mockListingRepository,
   mockListingEventsPublisher,
+  mockAgencyRepository,
+  mockAgencyFindUserById,
 } from '@test/mocks/providers/command-bus.mock';
+import { minimalListingProps } from '@test/fixtures/minimal-listing';
 
 describe('DeleteListingHandler', () => {
   let handler: DeleteListingHandler;
@@ -17,6 +22,24 @@ describe('DeleteListingHandler', () => {
   beforeEach(async () => {
     mockRepo = mockListingRepository;
     mockPublisher = mockListingEventsPublisher;
+
+    mockRepo.findById.mockResolvedValue(
+      Listing.rehydrate(
+        minimalListingProps({
+          id: 'test-listing-id',
+          ownerId: 'test-owner-id',
+          status: 'DRAFT',
+        }),
+      ),
+    );
+
+    mockAgencyFindUserById.mockResolvedValue({
+      id: 'test-owner-id',
+      email: 'test@example.com',
+      name: 'Test',
+      platformRole: 'user',
+      isActive: true,
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -29,15 +52,36 @@ describe('DeleteListingHandler', () => {
           provide: DI.ListingEventsPublisher,
           useValue: mockPublisher,
         },
+        {
+          provide: DI.AgencyRepository,
+          useValue: mockAgencyRepository,
+        },
       ],
     }).compile();
 
     handler = module.get<DeleteListingHandler>(DeleteListingHandler);
     jest.clearAllMocks();
+
+    mockRepo.findById.mockResolvedValue(
+      Listing.rehydrate(
+        minimalListingProps({
+          id: 'test-listing-id',
+          ownerId: 'test-owner-id',
+          status: 'DRAFT',
+        }),
+      ),
+    );
+    mockAgencyFindUserById.mockResolvedValue({
+      id: 'test-owner-id',
+      email: 'test@example.com',
+      name: 'Test',
+      platformRole: 'user',
+      isActive: true,
+    });
   });
 
   describe('execute', () => {
-    it('should delete a listing and publish domain events', async () => {
+    it('should soft-delete a listing via update and publish domain events', async () => {
       const payload = {
         id: 'test-listing-id',
         ownerId: 'test-owner-id',
@@ -47,17 +91,19 @@ describe('DeleteListingHandler', () => {
 
       await handler.execute(command);
 
-      expect(mockRepo.deleteById).toHaveBeenCalledTimes(1);
-      expect(mockRepo.deleteById).toHaveBeenCalledWith('test-listing-id');
+      expect(mockRepo.update).toHaveBeenCalledTimes(1);
       expect(mockPublisher.publish).toHaveBeenCalledTimes(1);
 
       const publishedEvents = mockPublisher.publish.mock.calls[0][0];
-      expect(publishedEvents).toHaveLength(2);
-      expect(publishedEvents[1]).toMatchObject({
-        type: 'ListingDeleted',
+      expect(publishedEvents).toHaveLength(1);
+      expect(publishedEvents[0]).toMatchObject({
+        type: 'ListingUpdated',
         listingId: 'test-listing-id',
         ownerId: 'test-owner-id',
       });
+
+      const updatedListing = mockRepo.update.mock.calls[0][0];
+      expect(updatedListing.snapshot.status).toBe('DELETED');
     });
 
     it('should handle repository errors gracefully', async () => {
@@ -66,7 +112,7 @@ describe('DeleteListingHandler', () => {
         ownerId: 'test-owner-id',
       };
 
-      mockRepo.deleteById.mockRejectedValueOnce(new Error('Database error'));
+      mockRepo.update.mockRejectedValueOnce(new Error('Database error'));
 
       const command = new DeleteListingCommand(payload);
 
@@ -74,13 +120,13 @@ describe('DeleteListingHandler', () => {
       expect(mockPublisher.publish).not.toHaveBeenCalled();
     });
 
-    it('should not publish events if repository delete fails', async () => {
+    it('should not publish events if repository update fails', async () => {
       const payload = {
         id: 'test-listing-id',
         ownerId: 'test-owner-id',
       };
 
-      mockRepo.deleteById.mockRejectedValueOnce(new Error('Connection failed'));
+      mockRepo.update.mockRejectedValueOnce(new Error('Connection failed'));
 
       const command = new DeleteListingCommand(payload);
 

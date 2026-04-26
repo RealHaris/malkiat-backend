@@ -9,6 +9,16 @@ type DiscoverParams = {
   perPage: number;
   sort?: 'newest' | 'price_asc' | 'price_desc';
   city: string;
+  minPrice?: number;
+  maxPrice?: number;
+  areaIds?: string[];
+  excludeAreaIds?: string[];
+  purpose?: string;
+  propertyCategory?: string;
+  propertySubtypeId?: string;
+  minAreaSqft?: number;
+  maxAreaSqft?: number;
+  bedroomsCount?: number;
 };
 
 type SearchParams = {
@@ -19,6 +29,7 @@ type SearchParams = {
   sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';
   city: string;
   areaIds?: string[];
+  excludeAreaIds?: string[];
   purpose?: string;
   propertyCategory?: string;
   propertySubtypeId?: string;
@@ -67,6 +78,7 @@ function toListingCard(doc: any): ListingCard {
 function buildFilterBy(input: {
   city: string;
   areaIds?: string[];
+  excludeAreaIds?: string[];
   purpose?: string;
   propertyCategory?: string;
   propertySubtypeId?: string;
@@ -81,6 +93,12 @@ function buildFilterBy(input: {
   if (input.areaIds && input.areaIds.length > 0) {
     const escapedAreaIds = input.areaIds.map(escapeFilterValue);
     clauses.push(`areaId:=[${escapedAreaIds.join(',')}]`);
+  }
+
+  if (input.excludeAreaIds && input.excludeAreaIds.length > 0) {
+    for (const id of input.excludeAreaIds) {
+      clauses.push(`areaId:!=${escapeFilterValue(id)}`);
+    }
   }
 
   if (input.purpose) clauses.push(`purpose:=${escapeFilterValue(input.purpose)}`);
@@ -102,8 +120,6 @@ function buildFilterBy(input: {
 }
 
 function escapeFilterValue(v: string): string {
-  // Typesense filter_by uses := with unquoted strings for simple tokens.
-  // For safety with spaces, wrap in backticks.
   if (/^[A-Za-z0-9_-]+$/.test(v)) return v;
   return '`' + v.replace(/`/g, '\\`') + '`';
 }
@@ -134,6 +150,16 @@ export class TypesenseListingsSearch {
         query_by: 'title',
         filter_by: buildFilterBy({
           city: input.city,
+          areaIds: input.areaIds,
+          excludeAreaIds: input.excludeAreaIds,
+          purpose: input.purpose,
+          propertyCategory: input.propertyCategory,
+          propertySubtypeId: input.propertySubtypeId,
+          minPrice: input.minPrice,
+          maxPrice: input.maxPrice,
+          minAreaSqft: input.minAreaSqft,
+          maxAreaSqft: input.maxAreaSqft,
+          bedroomsCount: input.bedroomsCount,
         }),
         sort_by: sortByForDiscover(input.sort),
         page: input.page,
@@ -159,6 +185,7 @@ export class TypesenseListingsSearch {
         filter_by: buildFilterBy({
           city: input.city,
           areaIds: input.areaIds,
+          excludeAreaIds: input.excludeAreaIds,
           purpose: input.purpose,
           propertyCategory: input.propertyCategory,
           propertySubtypeId: input.propertySubtypeId,
@@ -168,7 +195,6 @@ export class TypesenseListingsSearch {
           maxAreaSqft: input.maxAreaSqft,
           bedroomsCount: input.bedroomsCount,
         }),
-        // Hybrid: Typesense generates query embeddings because the collection schema has `embed` config.
         vector_query: 'embedding:([], k:200)',
         sort_by: sortByForSearch(input.sort),
         page: input.page,

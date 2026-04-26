@@ -29,6 +29,16 @@ export class DiscoverListingsHandler implements IQueryHandler<DiscoverListingsQu
       perPage,
       city: query.input.city,
       sort: query.input.sort,
+      minPrice: query.input.minPrice,
+      maxPrice: query.input.maxPrice,
+      areaIds: query.input.areaIds,
+      excludeAreaIds: query.input.excludeAreaIds,
+      purpose: query.input.purpose,
+      propertyCategory: query.input.propertyCategory,
+      propertySubtypeId: query.input.propertySubtypeId,
+      minAreaSqft: query.input.minAreaSqft,
+      maxAreaSqft: query.input.maxAreaSqft,
+      bedroomsCount: query.input.bedroomsCount,
     });
   }
 }
