@@ -16,7 +16,8 @@ COPY nest-cli.json tsconfig.json tsconfig.build.json tsconfig.docker.json drizzl
 COPY src ./src
 COPY scripts ./scripts
 
-RUN bun x nest build --path tsconfig.docker.json
+RUN bun x nest build --path tsconfig.docker.json \
+  && bun x tsc-alias -p tsconfig.docker.json
 
 FROM oven/bun:1.3.11-slim AS prod-deps
 
