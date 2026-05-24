@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const postgres = require('postgres');
+const { default: postgres } = require('postgres');
 const { Client } = require('typesense');
 
 function required(name) {
