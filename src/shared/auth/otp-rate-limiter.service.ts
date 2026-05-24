@@ -1,10 +1,13 @@
-import { Injectable, Inject } from '@nestjs/common';
-import type { RedisClient } from '@infra/redis/client';
-import { DI } from '@app/di.tokens';
+import { Injectable } from '@nestjs/common';
 
 const OTP_RATE_LIMIT_KEY_PREFIX = 'otp:ratelimit:';
 const MAX_ATTEMPTS = 5;
-const RATE_LIMIT_TTL_SECONDS = 24 * 60 * 60; // 24 hours
+const RATE_LIMIT_TTL_SECONDS = 24 * 60 * 60;
+
+interface RateLimitEntry {
+  count: number;
+  expiresAt: number;
+}
 
 export interface OtpRateLimitResult {
   allowed: boolean;
@@ -15,78 +18,85 @@ export interface OtpRateLimitResult {
 
 @Injectable()
 export class OtpRateLimiterService {
-  constructor(@Inject(DI.RedisClient) private readonly redis: RedisClient) {}
+  private store = new Map<string, RateLimitEntry>();
 
   private getKey(identifier: string): string {
     const normalized = identifier.toLowerCase().trim();
     return `${OTP_RATE_LIMIT_KEY_PREFIX}${normalized}`;
   }
 
-  async checkRateLimit(identifier: string): Promise<OtpRateLimitResult> {
-    const key = this.getKey(identifier);
-    const attempts = await this.redis.get(key);
+  private cleanup(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.store.entries()) {
+      if (entry.expiresAt <= now) {
+        this.store.delete(key);
+      }
+    }
+  }
 
-    if (!attempts) {
+  async checkRateLimit(identifier: string): Promise<OtpRateLimitResult> {
+    this.cleanup();
+    const key = this.getKey(identifier);
+    const entry = this.store.get(key);
+
+    if (!entry) {
       return {
         allowed: true,
         remainingAttempts: MAX_ATTEMPTS,
       };
     }
 
-    const attemptCount = parseInt(attempts, 10);
-
-    if (attemptCount >= MAX_ATTEMPTS) {
-      const ttl = await this.redis.ttl(key);
+    if (entry.count >= MAX_ATTEMPTS) {
+      const cooldown = Math.max(0, Math.ceil((entry.expiresAt - Date.now()) / 1000));
       return {
         allowed: false,
         remainingAttempts: 0,
-        cooldownSeconds: ttl > 0 ? ttl : RATE_LIMIT_TTL_SECONDS,
-        nextAllowedAt: Date.now() + (ttl > 0 ? ttl : RATE_LIMIT_TTL_SECONDS) * 1000,
+        cooldownSeconds: cooldown,
+        nextAllowedAt: entry.expiresAt,
       };
     }
 
     return {
       allowed: true,
-      remainingAttempts: MAX_ATTEMPTS - attemptCount,
+      remainingAttempts: MAX_ATTEMPTS - entry.count,
     };
   }
 
   async recordAttempt(identifier: string): Promise<number> {
+    this.cleanup();
     const key = this.getKey(identifier);
-    const exists = await this.redis.exists(key);
+    const now = Date.now();
+    const entry = this.store.get(key);
 
-    if (!exists) {
-      await this.redis.setex(key, RATE_LIMIT_TTL_SECONDS, '1');
+    if (!entry || entry.expiresAt <= now) {
+      this.store.set(key, { count: 1, expiresAt: now + RATE_LIMIT_TTL_SECONDS * 1000 });
       return 1;
     }
 
-    const current = await this.redis.get(key);
-    const newCount = (parseInt(current || '0', 10) + 1).toString();
-    await this.redis.set(key, newCount);
-    return parseInt(newCount, 10);
+    entry.count += 1;
+    return entry.count;
   }
 
   async getRemainingAttempts(identifier: string): Promise<number> {
+    this.cleanup();
     const key = this.getKey(identifier);
-    const attempts = await this.redis.get(key);
-
-    if (!attempts) {
-      return MAX_ATTEMPTS;
-    }
-
-    const attemptCount = parseInt(attempts, 10);
-    return Math.max(0, MAX_ATTEMPTS - attemptCount);
+    const entry = this.store.get(key);
+    if (!entry) return MAX_ATTEMPTS;
+    return Math.max(0, MAX_ATTEMPTS - entry.count);
   }
 
   async getCooldownRemainingSeconds(identifier: string): Promise<number> {
+    this.cleanup();
     const key = this.getKey(identifier);
-    const ttl = await this.redis.ttl(key);
-    return ttl > 0 ? ttl : 0;
+    const entry = this.store.get(key);
+    if (!entry) return 0;
+    const remaining = Math.ceil((entry.expiresAt - Date.now()) / 1000);
+    return remaining > 0 ? remaining : 0;
   }
 
   async resetRateLimit(identifier: string): Promise<void> {
     const key = this.getKey(identifier);
-    await this.redis.del(key);
+    this.store.delete(key);
   }
 
   calculateBackoffSeconds(attemptCount: number): number {

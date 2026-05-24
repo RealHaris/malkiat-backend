@@ -3,16 +3,12 @@ export const DI = {
   UnitOfWork: Symbol('UnitOfWork'),
   OutboxRepository: Symbol('OutboxRepository'),
 
-  RedisClient: Symbol('RedisClient'),
-
   TypesenseClient: Symbol('TypesenseClient'),
-
-  BullmqConnection: Symbol('BullmqConnection'),
-  ListingEventsQueue: Symbol('ListingEventsQueue'),
 
   ListingRepository: Symbol('ListingRepository'),
   ListingEventsPublisher: Symbol('ListingEventsPublisher'),
   AgencyRepository: Symbol('AgencyRepository'),
 
+  RedisClient: Symbol('RedisClient'),
   BetterAuth: Symbol('BetterAuth'),
 } as const;

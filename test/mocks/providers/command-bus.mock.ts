@@ -67,24 +67,23 @@ export const mockTypesenseClient = {
   search: mockTypesenseListingsDocumentSearch,
 } as any;
 
-export const mockAppEnv: jest.Mocked<AppEnv> = {
+export const mockAppEnv: AppEnv = {
   NODE_ENV: 'test',
   PORT: 3000,
   DATABASE_URL: 'postgresql://test',
   REDIS_URL: 'redis://test',
+  LISTING_EVENTS_WORKER_URL: 'http://localhost:8787',
   TYPESENSE_HOST: 'localhost',
   TYPESENSE_PORT: 8108,
   TYPESENSE_PROTOCOL: 'http',
   TYPESENSE_ADMIN_API_KEY: 'test-key',
   TYPESENSE_COLLECTION_LISTINGS: 'listings',
-  LISTING_EVENTS_QUEUE_NAME: 'listing-events',
   BETTER_AUTH_SECRET: 'test-secret',
   BETTER_AUTH_BASE_URL: 'http://localhost:3002/auth',
   APP_PUBLIC_URL: 'http://localhost:3001',
   CORS_ALLOWED_ORIGINS: 'http://localhost:3001,https://www.malkiat.site,https://malkiat.site',
   RESEND_FROM_EMAIL: 'hello@example.com',
-  BULLMQ_DASHBOARD_USER: 'admin',
-  BULLMQ_DASHBOARD_PASSWORD: 'admin',
+  SENTRY_DSN: undefined,
 };
 
 export const createMockCommandBus = (): jest.Mocked<CommandBus> =>

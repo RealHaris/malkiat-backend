@@ -14,14 +14,27 @@
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
-      "@/*": ["./src/*"],
-      "@app/*": ["./src/app/*"],
-      "@shared/*": ["./src/shared/*"],
-      "@infra/*": ["./src/infrastructure/*"],
-      "@modules/*": ["./src/modules/*"],
-      "@worker/*": ["./src/worker/*"],
-      "@test/*": ["./test/*"],
-      "*": ["./*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@app/*": [
+        "./src/app/*"
+      ],
+      "@shared/*": [
+        "./src/shared/*"
+      ],
+      "@infra/*": [
+        "./src/infrastructure/*"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@test/*": [
+        "./test/*"
+      ],
+      "*": [
+        "./*"
+      ]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -30,8 +43,18 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node", "jest"]
+    "types": [
+      "node",
+      "jest"
+    ]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "drizzle.config.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "drizzle.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

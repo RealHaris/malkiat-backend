@@ -3,10 +3,10 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 import { DI } from '@app/di.tokens';
 import { ResendEmailService } from '@shared/email/resend-email.service';
+import { RedisClientProvider } from '@infra/redis/provider';
 import { AgenciesController } from './presentation/agencies.controller';
 import { DrizzleAgencyRepository } from './infrastructure/drizzle-agency.repository';
 import { AgencyInvitationsService } from './agency-invitations.service';
-import { AgencyInviteExpiryListener } from './agency-invite-expiry.listener';
 
 @Module({
   controllers: [AgenciesController],
@@ -18,7 +18,7 @@ import { AgencyInviteExpiryListener } from './agency-invite-expiry.listener';
     },
     ResendEmailService,
     AgencyInvitationsService,
-    AgencyInviteExpiryListener,
+    RedisClientProvider,
   ],
   exports: [DI.AgencyRepository],
 })

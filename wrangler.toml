@@ -1,0 +1,16 @@
+name = "malkiat-backend"
+main = "src/worker-cf/index.ts"
+compatibility_date = "2026-05-24"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+NODE_ENV = "production"
+
+[[queues.producers]]
+queue = "listing-events"
+binding = "LISTING_QUEUE"
+
+[[queues.consumers]]
+queue = "listing-events"
+max_batch_size = 10
+max_batch_timeout = 30

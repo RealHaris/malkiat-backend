@@ -4,7 +4,6 @@ import { DI } from '@app/di.tokens';
 import { APP_ENV } from '@shared/config/config.constants';
 import type { AppEnv } from '@shared/config/env';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import type { RedisClient } from '@infra/redis/client';
 import { createBetterAuthInstance } from '@infra/auth/better-auth.instance';
 import { InfrastructureModule } from '@infra/infrastructure.module';
 import { AuthOtpController } from './auth-otp.controller';
@@ -12,13 +11,9 @@ import { OtpRateLimiterService } from '@shared/auth/otp-rate-limiter.service';
 
 let sharedAuthInstance: any = null;
 
-const getOrCreateAuthInstance = (
-  env: AppEnv,
-  db: PostgresJsDatabase<any>,
-  redis: RedisClient,
-) => {
+const getOrCreateAuthInstance = (env: AppEnv, db: PostgresJsDatabase<any>) => {
   if (!sharedAuthInstance) {
-    sharedAuthInstance = createBetterAuthInstance(env, db, redis);
+    sharedAuthInstance = createBetterAuthInstance(env, db);
   }
   return sharedAuthInstance;
 };
@@ -28,9 +23,9 @@ const getOrCreateAuthInstance = (
   imports: [
     InfrastructureModule,
     BetterAuthNestModule.forRootAsync({
-      inject: [APP_ENV, DI.DrizzleDb, DI.RedisClient],
-      useFactory: (env: AppEnv, db: PostgresJsDatabase<any>, redis: RedisClient) => {
-        return { auth: getOrCreateAuthInstance(env, db, redis) };
+      inject: [APP_ENV, DI.DrizzleDb],
+      useFactory: (env: AppEnv, db: PostgresJsDatabase<any>) => {
+        return { auth: getOrCreateAuthInstance(env, db) };
       },
     }),
   ],
@@ -39,9 +34,9 @@ const getOrCreateAuthInstance = (
     OtpRateLimiterService,
     {
       provide: DI.BetterAuth,
-      inject: [APP_ENV, DI.DrizzleDb, DI.RedisClient],
-      useFactory: (env: AppEnv, db: PostgresJsDatabase<any>, redis: RedisClient) => {
-        return getOrCreateAuthInstance(env, db, redis);
+      inject: [APP_ENV, DI.DrizzleDb],
+      useFactory: (env: AppEnv, db: PostgresJsDatabase<any>) => {
+        return getOrCreateAuthInstance(env, db);
       },
     },
   ],

@@ -4,14 +4,11 @@ import { phoneNumber, emailOTP } from 'better-auth/plugins';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Resend } from 'resend';
 import type { AppEnv } from '@shared/config/env';
-import { createRedisSecondaryStorage } from '@infra/auth/redis-secondary-storage';
-import type { RedisClient } from '@infra/redis/client';
 import * as schema from '@infra/db/drizzle/schema';
 
 export function createBetterAuthInstance(
   env: AppEnv,
   db: PostgresJsDatabase<any>,
-  redis?: RedisClient,
 ) {
   if (!env.BETTER_AUTH_SECRET) {
     throw new Error('BETTER_AUTH_SECRET is required');
@@ -91,7 +88,6 @@ export function createBetterAuthInstance(
       usePlural: false,
       schema,
     }),
-    secondaryStorage: redis ? createRedisSecondaryStorage(redis) : undefined,
     session: {
       expiresIn: 60 * 60 * 6,
       updateAge: 60 * 30,

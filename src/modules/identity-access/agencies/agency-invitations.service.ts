@@ -8,7 +8,6 @@ import type { AppEnv } from '@shared/config/env';
 import { DrizzleAgencyRepository } from './infrastructure/drizzle-agency.repository';
 
 const INVITE_TOKEN_TTL_SECONDS = 72 * 60 * 60; // 72 hours
-const REDIS_KEY_PREFIX = 'invite:token:';
 
 export type InviteTokenPayload = {
   inviteId: string;
@@ -22,14 +21,25 @@ export class AgencyInvitationsService {
 
   constructor(
     @Inject(DI.AgencyRepository) private readonly agencyRepo: DrizzleAgencyRepository,
-    @Inject(DI.RedisClient) private readonly redis: RedisClient,
     private readonly emailService: ResendEmailService,
     @Inject(APP_ENV) private readonly env: AppEnv,
+    @Inject(DI.RedisClient) private readonly redis: RedisClient,
   ) {
     this.appPublicUrl = env.APP_PUBLIC_URL ?? 'http://localhost:3001';
   }
 
-  // ─── Token helpers ────────────────────────────────────────────────────────
+  async storeTokenInRedis(
+    tokenHash: string,
+    payload: InviteTokenPayload,
+  ): Promise<void> {
+    const key = `invite:${tokenHash}`;
+    await this.redis.setex(key, INVITE_TOKEN_TTL_SECONDS, JSON.stringify(payload));
+  }
+
+  async deleteTokenFromRedis(tokenHash: string): Promise<void> {
+    const key = `invite:${tokenHash}`;
+    await this.redis.del(key);
+  }
 
   generateToken(): string {
     return randomBytes(32).toString('hex');
@@ -38,37 +48,6 @@ export class AgencyInvitationsService {
   hashToken(token: string): string {
     return createHash('sha256').update(token).digest('hex');
   }
-
-  private redisKey(tokenHash: string): string {
-    return `${REDIS_KEY_PREFIX}${tokenHash}`;
-  }
-
-  // ─── Redis ops ────────────────────────────────────────────────────────────
-
-  async storeTokenInRedis(tokenHash: string, payload: InviteTokenPayload): Promise<void> {
-    await this.redis.set(
-      this.redisKey(tokenHash),
-      JSON.stringify(payload),
-      'EX',
-      INVITE_TOKEN_TTL_SECONDS,
-    );
-  }
-
-  async getTokenFromRedis(tokenHash: string): Promise<InviteTokenPayload | null> {
-    const raw = await this.redis.get(this.redisKey(tokenHash));
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw) as InviteTokenPayload;
-    } catch {
-      return null;
-    }
-  }
-
-  async deleteTokenFromRedis(tokenHash: string): Promise<void> {
-    await this.redis.del(this.redisKey(tokenHash));
-  }
-
-  // ─── Email ────────────────────────────────────────────────────────────────
 
   async sendInvitationEmail(opts: {
     to: string;
@@ -153,49 +132,54 @@ export class AgencyInvitationsService {
     });
   }
 
-  // ─── Expiry sync (called by Redis keyspace expiry listener) ───────────────
-
   async handleTokenExpiry(tokenHash: string): Promise<void> {
-    // Clear the token in DB when Redis key expires — row stays for audit
     await this.agencyRepo.clearInvitationToken(tokenHash, 'expired');
   }
 
-  // ─── Full invite flow helpers ─────────────────────────────────────────────
-
   /**
-   * Issue a new token: generate → hash → store Redis → return raw token.
+   * Issue a new token: generate and hash, return raw token.
    * Caller writes tokenHash + expiresAt to DB.
    */
-  async issueToken(inviteId: string, agencyId: string, inviteeEmail: string): Promise<string> {
-    const rawToken = this.generateToken();
-    const tokenHash = this.hashToken(rawToken);
-    await this.storeTokenInRedis(tokenHash, { inviteId, agencyId, inviteeEmail });
-    return rawToken;
+  async issueToken(): Promise<string> {
+    return this.generateToken();
   }
 
   /**
-   * Revoke a token: delete from Redis + clear DB token field.
+   * Revoke a token: clear token in DB.
    */
   async revokeToken(tokenHash: string): Promise<void> {
-    await Promise.all([
-      this.deleteTokenFromRedis(tokenHash),
-      this.agencyRepo.clearInvitationToken(tokenHash, 'revoked'),
-    ]);
+    await this.agencyRepo.clearInvitationToken(tokenHash, 'revoked');
   }
 
   /**
    * Validate a token from an accept request.
-   * Primary check is Redis (fast path). DB row is fetched for invite metadata.
-   * Returns null if invalid/revoked/expired.
+   * Fetches the invite by tokenHash from DB and checks expiry.
    */
   async validateToken(rawToken: string): Promise<{
     payload: InviteTokenPayload;
     tokenHash: string;
   } | null> {
     const tokenHash = this.hashToken(rawToken);
-    const payload = await this.getTokenFromRedis(tokenHash);
-    if (!payload) return null; // revoked or expired
-    return { payload, tokenHash };
+
+    // Primary check: Redis (fast, no DB)
+    const cached = await this.redis.get(`invite:${tokenHash}`);
+    if (cached) {
+      return { payload: JSON.parse(cached) as InviteTokenPayload, tokenHash };
+    }
+
+    // Secondary check: DB (survives Redis restarts)
+    const invite = await this.agencyRepo.getInvitationByTokenHash(tokenHash);
+    if (!invite || invite.expiresAt === null) return null;
+    if (new Date() > invite.expiresAt) return null;
+
+    return {
+      payload: {
+        inviteId: invite.id,
+        agencyId: invite.agencyId,
+        inviteeEmail: invite.inviteeEmail ?? '',
+      },
+      tokenHash,
+    };
   }
 
   expiresAt(): Date {
