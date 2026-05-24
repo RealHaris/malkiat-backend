@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { AuthModule as BetterAuthNestModule } from '@thallesp/nestjs-better-auth';
 import { DI } from '@app/di.tokens';
 import { APP_ENV } from '@shared/config/config.constants';
@@ -7,17 +7,44 @@ import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { RedisClient } from '@infra/redis/client';
 import { createBetterAuthInstance } from '@infra/auth/better-auth.instance';
 import { InfrastructureModule } from '@infra/infrastructure.module';
+import { AuthOtpController } from './auth-otp.controller';
+import { OtpRateLimiterService } from '@shared/auth/otp-rate-limiter.service';
 
+let sharedAuthInstance: any = null;
+
+const getOrCreateAuthInstance = (
+  env: AppEnv,
+  db: PostgresJsDatabase<any>,
+  redis: RedisClient,
+) => {
+  if (!sharedAuthInstance) {
+    sharedAuthInstance = createBetterAuthInstance(env, db, redis);
+  }
+  return sharedAuthInstance;
+};
+
+@Global()
 @Module({
   imports: [
     InfrastructureModule,
     BetterAuthNestModule.forRootAsync({
       inject: [APP_ENV, DI.DrizzleDb, DI.RedisClient],
       useFactory: (env: AppEnv, db: PostgresJsDatabase<any>, redis: RedisClient) => {
-        const auth = createBetterAuthInstance(env, db, redis);
-        return { auth };
+        return { auth: getOrCreateAuthInstance(env, db, redis) };
       },
     }),
   ],
+  controllers: [AuthOtpController],
+  providers: [
+    OtpRateLimiterService,
+    {
+      provide: DI.BetterAuth,
+      inject: [APP_ENV, DI.DrizzleDb, DI.RedisClient],
+      useFactory: (env: AppEnv, db: PostgresJsDatabase<any>, redis: RedisClient) => {
+        return getOrCreateAuthInstance(env, db, redis);
+      },
+    },
+  ],
+  exports: [OtpRateLimiterService, DI.BetterAuth],
 })
 export class IdentityAccessAuthModule {}

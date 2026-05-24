@@ -35,6 +35,7 @@ export class UpdateListingCommand {
       bathroomsCount?: number;
       amenityIds?: string[];
       imagesJson?: string[];
+      phoneNumbers?: string[];
       videoUrl?: string | null;
       platforms?: string[];
       status?: ListingStatus;

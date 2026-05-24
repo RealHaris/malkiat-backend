@@ -1,23 +1,9 @@
 import { Global, Module } from '@nestjs/common';
-import { WinstonModule } from 'nest-winston';
-import { APP_ENV } from '@shared/config/config.constants';
-import type { AppEnv } from '@shared/config/env';
-import { createAppLoggerOptions } from './logger.factory';
+import { AppLoggerService } from './app-logger.service';
 
 @Global()
 @Module({
-  imports: [
-    WinstonModule.forRootAsync({
-      inject: [APP_ENV],
-      useFactory: (env: AppEnv) =>
-        createAppLoggerOptions({
-          level: env.LOG_LEVEL,
-          dir: env.LOG_DIR,
-          maxFiles: env.LOG_MAX_FILES,
-          maxSize: env.LOG_MAX_SIZE,
-        }),
-    }),
-  ],
-  exports: [WinstonModule],
+  providers: [AppLoggerService],
+  exports: [AppLoggerService],
 })
 export class AppLoggerModule {}

@@ -49,6 +49,7 @@ async function main() {
       { name: 'readyForPossession', type: 'bool', facet: true },
       { name: 'bathroomsCount', type: 'int32', facet: true, optional: true },
       { name: 'imagesJson', type: 'string[]' },
+      { name: 'phoneNumbers', type: 'string[]', optional: true },
       { name: 'videoUrl', type: 'string', optional: true },
       { name: 'platforms', type: 'string[]', facet: true },
       { name: 'publishedAt', type: 'int64', optional: true },

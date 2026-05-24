@@ -88,6 +88,7 @@ export const ListingEventsWorkerProvider: Provider = {
               installmentAvailable: Boolean(row.installmentAvailable),
               readyForPossession: Boolean(row.readyForPossession),
               imagesJson: Array.isArray(row.imagesJson) ? row.imagesJson.map(String) : [],
+              phoneNumbers: Array.isArray(row.phoneNumbers) ? row.phoneNumbers.map(String) : [],
               videoUrl: row.videoUrl ?? null,
               platforms: Array.isArray(row.platforms) ? row.platforms.map(String) : [],
               publishedAt: row.publishedAt ? Math.floor(new Date(row.publishedAt).getTime() / 1000) : null,

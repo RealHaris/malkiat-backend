@@ -24,6 +24,7 @@ export type ListingCard = {
   bedroomsCount?: number | null;
   bathroomsCount?: number | null;
   imagesJson: string[];
+  phoneNumbers?: string[];
   videoUrl?: string | null;
   platforms: string[];
   status: string;

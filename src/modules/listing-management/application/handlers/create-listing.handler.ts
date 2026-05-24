@@ -2,14 +2,14 @@ import { BadRequestException, Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { randomUUID } from 'node:crypto';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { eq } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 
 import { DI } from '@app/di.tokens';
 import { Listing } from '@modules/listing-management/domain/listing.aggregate';
 import { CreateListingCommand } from '@modules/listing-management/application/commands/create-listing.command';
 import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
 import type { ListingEventsPublisher } from '@modules/listing-management/application/ports/listing-events.publisher';
-import { areas, propertySubtypes, toSqft } from '@infra/db/drizzle/schema';
+import { areas, propertySubtypes, toSqft, user } from '@infra/db/drizzle/schema';
 import { DrizzleAgencyRepository } from '@modules/identity-access/agencies/infrastructure/drizzle-agency.repository';
 import { canPostForAgency } from '@modules/identity-access/agencies/presentation/agency-authz';
 
@@ -124,6 +124,7 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
       bedroomsCount: command.payload.bedroomsCount ?? null,
       bathroomsCount: command.payload.bathroomsCount ?? null,
       imagesJson: command.payload.imagesJson ?? [],
+      phoneNumbers: command.payload.phoneNumbers ?? [],
       videoUrl: command.payload.videoUrl ?? null,
       platforms: command.payload.platforms ?? ['ZAMEEN'],
       amenityIds: command.payload.amenityIds ?? [],
@@ -131,7 +132,19 @@ export class CreateListingHandler implements ICommandHandler<CreateListingComman
       status,
     });
 
+    const primaryPhone = (command.payload.phoneNumbers ?? []).find(
+      (item) => !item.startsWith('wa:'),
+    );
+
     await this.repo.create(listing);
+
+    if (command.payload.action === 'submit' && primaryPhone) {
+      await this.db
+        .update(user)
+        .set({ phoneNumber: primaryPhone, updatedAt: new Date() })
+        .where(and(eq(user.id, ownerId), isNull(user.phoneNumber)));
+    }
+
     await this.publisher.publish(listing.pullDomainEvents());
 
     return { id: listing.snapshot.id };

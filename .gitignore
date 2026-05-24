@@ -63,3 +63,4 @@ opencode.json
 typesense-data/
 dump.rdb
 .vercel
+graphify-out

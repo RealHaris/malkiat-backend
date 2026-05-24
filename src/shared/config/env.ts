@@ -4,11 +4,6 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   NODE_ENV: z.string().default('development'),
 
-  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).default('info'),
-  LOG_DIR: z.string().default('logs'),
-  LOG_MAX_FILES: z.string().default('3d'),
-  LOG_MAX_SIZE: z.string().default('20m'),
-
   // Kept optional for bootstrapping; infrastructure modules should validate when enabled.
   DATABASE_URL: z.string().optional(),
   REDIS_URL: z.string().optional(),
@@ -39,6 +34,8 @@ const envSchema = z.object({
 
   BULLMQ_DASHBOARD_USER: z.string().default('admin'),
   BULLMQ_DASHBOARD_PASSWORD: z.string().default('admin'),
+
+  SENTRY_DSN: z.string().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

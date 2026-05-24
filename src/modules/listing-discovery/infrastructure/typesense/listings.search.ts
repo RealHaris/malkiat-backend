@@ -67,6 +67,7 @@ function toListingCard(doc: any): ListingCard {
     bedroomsCount: doc.bedroomsCount ?? null,
     bathroomsCount: doc.bathroomsCount ?? null,
     imagesJson: (doc.imagesJson as string[] | undefined) ?? [],
+    phoneNumbers: (doc.phoneNumbers as string[] | undefined) ?? [],
     videoUrl: doc.videoUrl ?? null,
     platforms: (doc.platforms as string[] | undefined) ?? ['ZAMEEN'],
     status: String(doc.status ?? 'DRAFT'),

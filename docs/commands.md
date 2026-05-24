@@ -30,6 +30,9 @@ docker start typesense-malkiat
 docker stop typesense-malkiat
 docker restart typesense-malkiat
 docker rm -f typesense-malkiat
+
+# One-liner: stop, remove old, start fresh
+docker rm -f typesense-malkiat && docker run -d --name "typesense-malkiat" -p 8108:8108 -v "$(pwd)/typesense-data:/data" typesense/typesense:30.1 --data-dir /data --api-key="$TYPESENSE_ADMIN_API_KEY" --enable-cors
 ```
 
 ### Logs and Health

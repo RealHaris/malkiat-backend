@@ -189,6 +189,7 @@ export class UpdateListingHandler implements ICommandHandler<UpdateListingComman
       bathroomsCount: command.payload.bathroomsCount,
       amenityIds: command.payload.amenityIds,
       imagesJson: command.payload.imagesJson,
+      phoneNumbers: command.payload.phoneNumbers,
       videoUrl: command.payload.videoUrl,
       platforms: command.payload.platforms,
       status: command.payload.status,

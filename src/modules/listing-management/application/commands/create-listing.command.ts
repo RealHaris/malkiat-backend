@@ -34,6 +34,7 @@ export class CreateListingCommand {
       amenityIds?: string[];
       amenityValues?: Record<string, string | number | boolean>;
       imagesJson?: string[];
+      phoneNumbers?: string[];
       videoUrl?: string | null;
       platforms?: string[];
     },

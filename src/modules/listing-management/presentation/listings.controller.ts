@@ -192,7 +192,19 @@ export class ListingsController {
       throw new NotFoundException('Listing not found');
     }
 
-    return { item: listing.snapshot };
+    const phoneNumbers = listing.snapshot.phoneNumbers ?? [];
+    const primaryPhone = phoneNumbers.find((item) => !item.startsWith('wa:')) ?? null;
+    const whatsappPhone =
+      phoneNumbers.find((item) => item.startsWith('wa:'))?.replace(/^wa:/, '') ?? null;
+
+    return {
+      item: {
+        ...listing.snapshot,
+        phoneNumbers,
+        primaryPhone,
+        whatsappPhone,
+      },
+    };
   }
 
   @Post()

@@ -1,17 +1,19 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppApiModule } from '@app/app.api.module';
 import { APP_ENV } from '@shared/config/config.constants';
 import type { AppEnv } from '@shared/config/env';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { AppLoggerService } from '@shared/logger/app-logger.service';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   try {
-    const app = await NestFactory.create(AppApiModule, {
+    const app = await NestFactory.create<NestExpressApplication>(AppApiModule, {
       bodyParser: false,
+      bufferLogs: true,
     });
 
-    app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+    app.useLogger(app.get(AppLoggerService));
 
     const env = app.get<AppEnv>(APP_ENV);
 
@@ -66,8 +68,9 @@ async function bootstrap() {
       try {
         await app.listen(port);
         listening = true;
-      } catch (error: any) {
-        if (error.code === 'EADDRINUSE' && attempt < maxAttempts - 1) {
+      } catch (error: unknown) {
+        const err = error as NodeJS.ErrnoException;
+        if (err.code === 'EADDRINUSE' && attempt < maxAttempts - 1) {
           port++;
           attempt++;
         } else {

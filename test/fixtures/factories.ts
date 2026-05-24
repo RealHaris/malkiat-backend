@@ -24,6 +24,7 @@ export const createMockListing = (overrides: Partial<ListingProps> = {}): Listin
   readyForPossession: false,
   imagesJson: [],
   platforms: ['ZAMEEN'],
+  phoneNumbers: [],
   status: 'DRAFT',
   createdAt: new Date(),
   updatedAt: new Date(),

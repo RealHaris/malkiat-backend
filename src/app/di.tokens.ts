@@ -13,4 +13,6 @@ export const DI = {
   ListingRepository: Symbol('ListingRepository'),
   ListingEventsPublisher: Symbol('ListingEventsPublisher'),
   AgencyRepository: Symbol('AgencyRepository'),
+
+  BetterAuth: Symbol('BetterAuth'),
 } as const;

@@ -25,6 +25,7 @@ export type ListingIndexDocument = {
   installmentAvailable: boolean;
   readyForPossession: boolean;
   imagesJson: string[];
+  phoneNumbers: string[];
   videoUrl?: string | null;
   platforms: string[];
   publishedAt?: number | null;

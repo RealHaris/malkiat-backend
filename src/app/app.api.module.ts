@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
+import { SentryModule } from '@sentry/nestjs/setup';
+import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { InfrastructureModule } from '@infra/infrastructure.module';
 import { SharedConfigModule } from '@shared/config/config.module';
 import { AppLoggerModule } from '@shared/logger/logger.module';
@@ -10,6 +13,7 @@ import { BullmqDashboardModule } from '@modules/admin/bullmq-dashboard/bullmq-da
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     SharedConfigModule,
     AppLoggerModule,
     InfrastructureModule,
@@ -20,6 +24,11 @@ import { BullmqDashboardModule } from '@modules/admin/bullmq-dashboard/bullmq-da
     BullmqDashboardModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
+  ],
 })
 export class AppApiModule {}

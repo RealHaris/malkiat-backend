@@ -66,6 +66,23 @@ const updateListingSchema = z.object({
   imagesJson: z.array(z.string().url()).max(5).optional(),
   videoUrl: z.string().url().nullable().optional(),
   platforms: z.array(z.string()).optional(),
+  phoneNumbers: z
+    .array(z.string())
+    .min(2, VALIDATION_MESSAGES.REQUIRED('Phone numbers'))
+    .max(5, VALIDATION_MESSAGES.MAX_LENGTH('Phone numbers', 5))
+    .refine(
+      (numbers) => numbers.some((item) => item.startsWith('wa:')),
+      'WhatsApp number is required',
+    )
+    .refine(
+      (numbers) => numbers.some((item) => !item.startsWith('wa:')),
+      'Phone number is required',
+    )
+    .refine(
+      (numbers) => numbers.every((item) => /^wa:\+92\d{11}$/.test(item) || /^\+92\d{11}$/.test(item)),
+      'Phone numbers must be in +92 format with 11 digits',
+    )
+    .optional(),
   latitude: z.number().min(-90).max(90).nullable().optional(),
   longitude: z.number().min(-180).max(180).nullable().optional(),
   status: z

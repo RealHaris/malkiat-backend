@@ -27,6 +27,7 @@ const baseOmitStatus = (): Omit<ListingProps, 'status'> => ({
   readyForPossession: false,
   imagesJson: [],
   platforms: ['ZAMEEN'],
+  phoneNumbers: [],
   amenityIds: [],
   amenityValues: {},
   agencyId: null,

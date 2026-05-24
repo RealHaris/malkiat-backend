@@ -143,6 +143,10 @@ export const listings = pgTable('listings', {
     .$type<string[]>()
     .default(sql`'[]'::jsonb`)
     .notNull(),
+  phoneNumbers: jsonb('phone_numbers')
+    .$type<string[]>()
+    .default(sql`'[]'::jsonb`)
+    .notNull(),
   videoUrl: text('video_url'),
   platforms: platformEnum('platforms')
     .array()

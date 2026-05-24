@@ -70,10 +70,6 @@ export const mockTypesenseClient = {
 export const mockAppEnv: jest.Mocked<AppEnv> = {
   NODE_ENV: 'test',
   PORT: 3000,
-  LOG_LEVEL: 'error',
-  LOG_DIR: 'logs',
-  LOG_MAX_FILES: '3d',
-  LOG_MAX_SIZE: '20m',
   DATABASE_URL: 'postgresql://test',
   REDIS_URL: 'redis://test',
   TYPESENSE_HOST: 'localhost',
