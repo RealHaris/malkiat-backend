@@ -30,16 +30,33 @@ export interface ListingRepository {
     page: number;
     perPage: number;
     sort?: 'newest' | 'price_asc' | 'price_desc';
+    minPrice?: number;
+    maxPrice?: number;
+    areaIds?: string[];
+    excludeAreaIds?: string[];
+    purpose?: 'SELL' | 'RENT';
+    propertyCategory?: 'HOME' | 'PLOT' | 'COMMERCIAL';
+    propertySubtypeId?: string;
+    minAreaSqft?: number;
+    maxAreaSqft?: number;
+    bedroomsCount?: number;
   }): Promise<{ items: Listing[]; total: number }>;
   searchPublic(input: {
     q: string;
     city: string;
-    areaId?: string;
+    areaIds?: string[];
+    excludeAreaIds?: string[];
     page: number;
     perPage: number;
     sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';
     minPrice?: number;
     maxPrice?: number;
+    purpose?: 'SELL' | 'RENT';
+    propertyCategory?: 'HOME' | 'PLOT' | 'COMMERCIAL';
+    propertySubtypeId?: string;
+    minAreaSqft?: number;
+    maxAreaSqft?: number;
+    bedroomsCount?: number;
   }): Promise<{ items: Listing[]; total: number }>;
   deleteById(listingId: string): Promise<void>;
 }
