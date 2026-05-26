@@ -1,5 +1,5 @@
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { and, asc, count, desc, eq, gte, ilike, inArray, lte, ne, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, ilike, inArray, lte, or } from 'drizzle-orm';
 
 import type { ListingRepository } from '@modules/listing-management/application/ports/listing.repository';
 import type { Listing } from '@modules/listing-management/domain/listing.aggregate';
@@ -295,16 +295,6 @@ export class DrizzleListingRepository implements ListingRepository {
     page: number;
     perPage: number;
     sort?: 'newest' | 'price_asc' | 'price_desc';
-    minPrice?: number;
-    maxPrice?: number;
-    areaIds?: string[];
-    excludeAreaIds?: string[];
-    purpose?: 'SELL' | 'RENT';
-    propertyCategory?: 'HOME' | 'PLOT' | 'COMMERCIAL';
-    propertySubtypeId?: string;
-    minAreaSqft?: number;
-    maxAreaSqft?: number;
-    bedroomsCount?: number;
   }): Promise<{ items: Listing[]; total: number }> {
     const offset = (input.page - 1) * input.perPage;
     const orderByClause =
@@ -314,30 +304,7 @@ export class DrizzleListingRepository implements ListingRepository {
           ? [desc(listings.priceAmount), desc(listings.createdAt)]
           : [desc(listings.createdAt)];
 
-    const whereExpr = and(
-      eq(listings.status, 'PUBLISHED'),
-      eq(listings.city, input.city),
-      input.areaIds?.length ? inArray(listings.areaId, input.areaIds) : undefined,
-      input.purpose ? eq(listings.purpose, input.purpose) : undefined,
-      input.propertyCategory ? eq(listings.propertyCategory, input.propertyCategory) : undefined,
-      input.propertySubtypeId ? eq(listings.propertySubtypeId, input.propertySubtypeId) : undefined,
-      typeof input.minPrice === 'number'
-        ? gte(listings.priceAmount, input.minPrice.toString())
-        : undefined,
-      typeof input.maxPrice === 'number'
-        ? lte(listings.priceAmount, input.maxPrice.toString())
-        : undefined,
-      typeof input.minAreaSqft === 'number'
-        ? gte(listings.areaSqft, input.minAreaSqft.toString())
-        : undefined,
-      typeof input.maxAreaSqft === 'number'
-        ? lte(listings.areaSqft, input.maxAreaSqft.toString())
-        : undefined,
-      typeof input.bedroomsCount === 'number'
-        ? eq(listings.bedroomsCount, input.bedroomsCount)
-        : undefined,
-      ...(input.excludeAreaIds?.map((areaId) => ne(listings.areaId, areaId)) ?? []),
-    );
+    const whereExpr = and(eq(listings.status, 'PUBLISHED'), eq(listings.city, input.city));
 
     const [rows, totals] = await Promise.all([
       this.db
@@ -358,19 +325,12 @@ export class DrizzleListingRepository implements ListingRepository {
   async searchPublic(input: {
     q: string;
     city: string;
-    areaIds?: string[];
-    excludeAreaIds?: string[];
+    areaId?: string;
     page: number;
     perPage: number;
     sort?: 'relevance' | 'newest' | 'price_asc' | 'price_desc';
     minPrice?: number;
     maxPrice?: number;
-    purpose?: 'SELL' | 'RENT';
-    propertyCategory?: 'HOME' | 'PLOT' | 'COMMERCIAL';
-    propertySubtypeId?: string;
-    minAreaSqft?: number;
-    maxAreaSqft?: number;
-    bedroomsCount?: number;
   }): Promise<{ items: Listing[]; total: number }> {
     const offset = (input.page - 1) * input.perPage;
     const orderByClause =
@@ -383,26 +343,13 @@ export class DrizzleListingRepository implements ListingRepository {
     const whereExpr = and(
       eq(listings.status, 'PUBLISHED'),
       eq(listings.city, input.city),
-      input.areaIds?.length ? inArray(listings.areaId, input.areaIds) : undefined,
-      input.purpose ? eq(listings.purpose, input.purpose) : undefined,
-      input.propertyCategory ? eq(listings.propertyCategory, input.propertyCategory) : undefined,
-      input.propertySubtypeId ? eq(listings.propertySubtypeId, input.propertySubtypeId) : undefined,
+      input.areaId ? eq(listings.areaId, input.areaId) : undefined,
       typeof input.minPrice === 'number'
         ? gte(listings.priceAmount, input.minPrice.toString())
         : undefined,
       typeof input.maxPrice === 'number'
         ? lte(listings.priceAmount, input.maxPrice.toString())
         : undefined,
-      typeof input.minAreaSqft === 'number'
-        ? gte(listings.areaSqft, input.minAreaSqft.toString())
-        : undefined,
-      typeof input.maxAreaSqft === 'number'
-        ? lte(listings.areaSqft, input.maxAreaSqft.toString())
-        : undefined,
-      typeof input.bedroomsCount === 'number'
-        ? eq(listings.bedroomsCount, input.bedroomsCount)
-        : undefined,
-      ...(input.excludeAreaIds?.map((areaId) => ne(listings.areaId, areaId)) ?? []),
       or(ilike(listings.title, `%${input.q}%`), ilike(listings.description, `%${input.q}%`)),
     );
 
